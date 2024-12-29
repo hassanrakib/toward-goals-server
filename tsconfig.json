@@ -9,6 +9,7 @@
     "esModuleInterop": true, // Enable interoperability between CommonJS and ESModules
     "forceConsistentCasingInFileNames": true, // Enforce case-sensitive imports
     "skipLibCheck": true, // Skip type-checking of declaration files
+    "allowSyntheticDefaultImports": true, // Allow default imports from modules without default exports
     "resolveJsonModule": true, // Enable importing `.json` files
     "noImplicitAny": true, // Raise error on variables with `any` type
     "typeRoots": ["node_modules/@types"], // Specify types location

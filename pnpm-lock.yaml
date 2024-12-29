@@ -11,6 +11,9 @@ importers:
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1
+      cookie-parser:
+        specifier: ^1.4.7
+        version: 1.4.7
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -21,8 +24,8 @@ importers:
         specifier: ^4.21.2
         version: 4.21.2
       http-status:
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: 1.8.1
+        version: 1.8.1
       mongoose:
         specifier: ^8.9.2
         version: 8.9.2
@@ -36,12 +39,18 @@ importers:
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
+      '@types/cookie-parser':
+        specifier: ^1.4.8
+        version: 1.4.8(@types/express@5.0.0)
       '@types/cors':
         specifier: ^2.8.17
         version: 2.8.17
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.0
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.10.2
       eslint:
         specifier: ^9.17.0
         version: 9.17.0
@@ -180,6 +189,11 @@ packages:
 
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
+
+  '@types/cookie-parser@1.4.8':
+    resolution: {integrity: sha512-l37JqFrOJ9yQfRQkljb41l0xVphc7kg5JTjjr+pLRZ0IyZ49V4BQ8vbF4Ut2C2e+WH4al3xD3ZwYwIUfnbT4NQ==}
+    peerDependencies:
+      '@types/express': '*'
 
   '@types/cors@2.8.17':
     resolution: {integrity: sha512-8CGDvrBj1zgo2qE+oS3pOCyYNqCPryMWY2bGfwA0dcfopWGgxs+78df0Rs3rc9THP4JkOhLsAa+15VdpAqkcUA==}
@@ -418,11 +432,19 @@ packages:
     resolution: {integrity: sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==}
     engines: {node: '>= 0.6'}
 
+  cookie-parser@1.4.7:
+    resolution: {integrity: sha512-nGUvgXnotP3BsjiLX2ypbQnWoGUPIIfHQNZkkC668ntrzGWEZVW70HDEB1qnNGMicPje6EttlIgzo51YSwNQGw==}
+    engines: {node: '>= 0.8.0'}
+
   cookie-signature@1.0.6:
     resolution: {integrity: sha512-QADzlaHc8icV8I7vbaJXJwod9HWYp8uCqf1xa4OfNu1T7JVxQIrUgOWtHdNDtPiywmFbiS12VjotIXLrKM3orQ==}
 
   cookie@0.7.1:
     resolution: {integrity: sha512-6DnInpx7SJ2AK3+CTUE/ZM0vWTUboZCegxhC2xiIydHR9jNuTAASBrfEpHhiGOZw/nX51bHt6YQl8jsGo4y/0w==}
+    engines: {node: '>= 0.6'}
+
+  cookie@0.7.2:
+    resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
 
   cors@2.8.5:
@@ -709,8 +731,8 @@ packages:
     resolution: {integrity: sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==}
     engines: {node: '>= 0.8'}
 
-  http-status@2.0.0:
-    resolution: {integrity: sha512-fmtDiMjseYigum9OwVYJD2RD6tRYV4tzRrT92/aLSOS2bNPvz3jx8aHFqJ4Nq4ZLydalwuyh2Q6VuHg7qbCbJQ==}
+  http-status@1.8.1:
+    resolution: {integrity: sha512-YQF7j8Qf/Rlby0IbRPiWfNZt6aeUv3K0Pi0x3crbMZN+7F8dPn5k4b3n897vpM1Vk8Mg2fhOYc9fktKEQWMy/Q==}
     engines: {node: '>= 0.4.0'}
 
   https-proxy-agent@5.0.1:
@@ -1464,6 +1486,10 @@ snapshots:
     dependencies:
       '@types/node': 22.10.2
 
+  '@types/cookie-parser@1.4.8(@types/express@5.0.0)':
+    dependencies:
+      '@types/express': 5.0.0
+
   '@types/cors@2.8.17':
     dependencies:
       '@types/node': 22.10.2
@@ -1747,9 +1773,16 @@ snapshots:
 
   content-type@1.0.5: {}
 
+  cookie-parser@1.4.7:
+    dependencies:
+      cookie: 0.7.2
+      cookie-signature: 1.0.6
+
   cookie-signature@1.0.6: {}
 
   cookie@0.7.1: {}
+
+  cookie@0.7.2: {}
 
   cors@2.8.5:
     dependencies:
@@ -2068,7 +2101,7 @@ snapshots:
       statuses: 2.0.1
       toidentifier: 1.0.1
 
-  http-status@2.0.0: {}
+  http-status@1.8.1: {}
 
   https-proxy-agent@5.0.1:
     dependencies:
