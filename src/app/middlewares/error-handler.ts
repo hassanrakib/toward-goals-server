@@ -20,7 +20,6 @@ const errorHandler =
       statusCode: Number(httpStatus.INTERNAL_SERVER_ERROR),
       message: 'Something went wrong',
       errorSources: [{ path: '', message: 'Something went wrong' }],
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       stack: config.NODE_ENV === 'development' ? (err as Error).stack! : null,
     };
 

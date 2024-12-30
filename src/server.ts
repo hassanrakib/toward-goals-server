@@ -8,12 +8,10 @@ let server: Server;
 async function main() {
   try {
     // connect to mongodb
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await mongoose.connect(config.db_connection_uri!);
 
     // create server
     server = app.listen(config.port, () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       console.log(`# Server is running in port ${config.port!}`);
     });
   } catch (err) {

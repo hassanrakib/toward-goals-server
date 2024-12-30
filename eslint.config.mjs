@@ -19,6 +19,8 @@ export default tseslint.config({
     // Enforce Prettier rules as ESLint errors
     'prettier/prettier': 'error',
     // override any rules here
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-dynamic-delete': 'off',
   },
   languageOptions: {
     parser: tseslint.parser,
