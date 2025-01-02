@@ -21,6 +21,7 @@ export default tseslint.config({
     // override any rules here
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-dynamic-delete': 'off',
+    '@typescript-eslint/no-empty-object-type': 'off',
   },
   languageOptions: {
     parser: tseslint.parser,
