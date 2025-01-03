@@ -12,7 +12,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       type: String,
       required: [true, 'Username is required'],
       trim: true,
-      minlength: 5,
+      minlength: [5, 'Username must be at least 5 characters long'],
       lowercase: true,
       match: /^[a-z]/,
       unique: true,
