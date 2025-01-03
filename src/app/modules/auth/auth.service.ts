@@ -5,10 +5,8 @@ import { ILoginCredentials } from './auth.interface';
 import { createToken } from './auth.utils';
 import config from '../../config';
 
-const matchLoginCredentials = async ({
-  username,
-  password,
-}: ILoginCredentials) => {
+// through a successful login => we get accessToken & refreshToken
+const authenticateUser = async ({ username, password }: ILoginCredentials) => {
   // Step 1: Checking the user's existence in the db
   const user = await User.getUserWithPassword(username);
 
@@ -33,8 +31,19 @@ const matchLoginCredentials = async ({
     config.jwt_access_secret!,
     config.jwt_access_expires_in!
   );
+
+  const refreshToken = await createToken(
+    { username },
+    config.jwt_refresh_secret!,
+    config.jwt_refresh_expires_in!
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
 };
 
 export const authServices = {
-  matchLoginCredentials,
+  authenticateUser,
 };

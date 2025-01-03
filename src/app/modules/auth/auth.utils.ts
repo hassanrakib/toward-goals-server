@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
+import { CustomJwtPayload } from '../../interface';
 
 export const createToken = (
   payload: { username: string },
@@ -23,15 +24,22 @@ export const createToken = (
   });
 };
 
-export const verifyToken = (token: string, secretKey: string) => {
-  jwt.verify(token, secretKey, function (err, decoded) {
-    if (err) {
-      throw new AppError(
-        httpStatus.UNAUTHORIZED,
-        'You must login to access the resource'
-      );
-    } else {
-      return decoded;
-    }
+export const verifyToken = (
+  token: string,
+  secretKey: string
+): Promise<CustomJwtPayload> => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, secretKey, function (err, decoded) {
+      if (err) {
+        reject(
+          new AppError(
+            httpStatus.UNAUTHORIZED,
+            'You must login to access the resource'
+          )
+        );
+      } else {
+        resolve(decoded as CustomJwtPayload);
+      }
+    });
   });
 };

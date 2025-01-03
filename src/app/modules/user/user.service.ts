@@ -1,4 +1,4 @@
-import { IUser, ISanitizedUser } from './user.interface';
+import { IUser, SanitizedUser } from './user.interface';
 import { User } from './user.model';
 
 const insertUserIntoDB = async (user: IUser) => {
@@ -6,7 +6,7 @@ const insertUserIntoDB = async (user: IUser) => {
   const userDoc = await User.create(user);
 
   //   omit password field
-  const sanitizedUser: ISanitizedUser = {
+  const sanitizedUser: SanitizedUser = {
     _id: userDoc._id.toString(),
     username: userDoc.username,
     email: userDoc.email,
