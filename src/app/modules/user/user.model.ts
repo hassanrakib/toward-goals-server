@@ -1,12 +1,12 @@
 import { CallbackError, model, Schema } from 'mongoose';
-import { IUser } from './user.interface';
+import { IUser, IUserMethods, UserModel } from './user.interface';
 import isStrongPassword from 'validator/es/lib/isStrongPassword';
 import isEmail from 'validator/es/lib/isEmail';
 import isURL from 'validator/es/lib/isURL';
 import bcrypt from 'bcrypt';
 import config from '../../config';
 
-const userSchema = new Schema<IUser>(
+const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
     username: {
       type: String,
@@ -61,7 +61,7 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// has the password before storing into db
+// hash the password before storing into db
 userSchema.pre('save', async function (next) {
   try {
     await bcrypt.hash(this.password, config.bcrypt_salt_rounds!);
@@ -77,4 +77,17 @@ userSchema.post('save', function (doc, next) {
   next();
 });
 
-export const User = model<IUser>('User', userSchema);
+// user instance methods
+userSchema.methods.checkPassword = async function (plainTextPassword: string) {
+  // 'this' referes to the user doc & doc.password is a hashed password
+  return bcrypt.compare(plainTextPassword, this.password);
+};
+
+// static methods
+userSchema.statics.getUserWithPassword = async function (username: string) {
+  // get user with the 'password' field as it was selected false in the schema for queries
+  // 'this' refers to the model
+  return this.findOne({ username }).select('+password');
+};
+
+export const User = model<IUser, UserModel>('User', userSchema);
