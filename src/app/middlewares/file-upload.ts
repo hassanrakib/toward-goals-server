@@ -2,8 +2,10 @@ import path from 'path';
 import multer from 'multer';
 import { Request, Response } from 'express';
 import catchAsync from '../utils/catch-async';
+import httpStatus from 'http-status';
+import AppError from '../errors/AppError';
 
-// The disk storage engine gives you full control on storing files to disk
+// The disk storage engine gives you full control on storing files to server disk
 const storage = multer.diskStorage({
   // define the upload directory
   destination: (req, file, cb) => {
@@ -59,6 +61,16 @@ const uploadWithErrorHandling = async (req: Request, res: Response) => {
 const fileUpload = () => {
   return catchAsync(async (req, res, next) => {
     await uploadWithErrorHandling(req, res);
+    // attach 'text' data from req.body.data (as it is coming from form data) to req.body
+    // don't forget to convert to json
+    // Safely parse the JSON string from req.body.data
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      req.body = JSON.parse(req.body.data as string) as Record<string, unknown>;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Invalid JSON in form data');
+    }
     next();
   });
 };
