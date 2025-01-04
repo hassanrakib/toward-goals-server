@@ -1,6 +1,7 @@
 import express from 'express';
 import { userRoutes } from '../modules/user/user.route';
 import { authRoutes } from '../modules/auth/auth.route';
+import { goalRoutes } from '../modules/goal/goal.route';
 
 // it's a mini application also a route handler itself
 // every http request to '/api/v1' will be handled by this router
@@ -14,6 +15,10 @@ const routes = [
   {
     path: '/auth',
     handler: authRoutes,
+  },
+  {
+    path: '/goals',
+    handler: goalRoutes,
   },
 ];
 

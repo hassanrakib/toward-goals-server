@@ -10,6 +10,8 @@ import handleValidationError from '../errors/handleValidationError';
 import handleCastError from '../errors/handleCastError';
 import handleDuplicateValueError from '../errors/handleDuplicateValueError';
 import regenerateErrorResponse from '../errors/regenarateErrorResponse';
+import { MulterError } from 'multer';
+import handleMulterError from '../errors/handleMulterError';
 
 const errorHandler =
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,27 +24,6 @@ const errorHandler =
       errorSources: [{ path: '', message: 'Something went wrong' }],
       stack: config.NODE_ENV === 'development' ? (err as Error).stack! : null,
     };
-
-    if (err instanceof Error) {
-      errorResponse.message = err.message;
-      errorResponse.errorSources = [
-        {
-          path: '',
-          message: err.message,
-        },
-      ];
-    }
-
-    if (err instanceof AppError) {
-      errorResponse.statusCode = err.statusCode;
-      errorResponse.message = err.message;
-      errorResponse.errorSources = [
-        {
-          path: '',
-          message: err.message,
-        },
-      ];
-    }
 
     if (err instanceof ZodError) {
       regenerateErrorResponse(err, handleZodError, errorResponse);
@@ -62,6 +43,31 @@ const errorHandler =
         handleDuplicateValueError,
         errorResponse
       );
+    }
+
+    if (err instanceof MulterError) {
+      regenerateErrorResponse(err, handleMulterError, errorResponse);
+    }
+
+    if (err instanceof AppError) {
+      errorResponse.statusCode = err.statusCode;
+      errorResponse.message = err.message;
+      errorResponse.errorSources = [
+        {
+          path: '',
+          message: err.message,
+        },
+      ];
+    }
+
+    if (err instanceof Error) {
+      errorResponse.message = err.message;
+      errorResponse.errorSources = [
+        {
+          path: '',
+          message: err.message,
+        },
+      ];
     }
 
     res.status(errorResponse.statusCode).json(errorResponse);
