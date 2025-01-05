@@ -1,5 +1,6 @@
 import { MulterError } from 'multer';
 import { ErrorProcessor, ErrorSources } from '../interface/error';
+import httpStatus from 'http-status';
 
 const handleMulterError: ErrorProcessor<MulterError> = (err) => {
   const errorSources: ErrorSources = [
@@ -9,12 +10,12 @@ const handleMulterError: ErrorProcessor<MulterError> = (err) => {
     },
   ];
 
-  let statusCode = 400;
+  let statusCode: number = httpStatus.BAD_REQUEST;
   let message = err.message;
 
   switch (err.code) {
     case 'LIMIT_FILE_SIZE':
-      statusCode = 413;
+      statusCode = httpStatus.REQUEST_ENTITY_TOO_LARGE;
       message = 'File too large. Maximum allowed size is 5MB.';
       break;
     case 'LIMIT_FILE_COUNT':

@@ -1,10 +1,14 @@
 import { CallbackError, model, Schema } from 'mongoose';
 import { IUser, IUserMethods, UserModel } from './user.interface';
-import isStrongPassword from 'validator/es/lib/isStrongPassword';
-import isEmail from 'validator/es/lib/isEmail';
-import isURL from 'validator/es/lib/isURL';
 import bcrypt from 'bcrypt';
 import config from '../../config';
+import {
+  isStrongPassword,
+  isEmail,
+  isURL,
+  isLowercase,
+  isAlphanumeric,
+} from 'validator';
 
 const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
@@ -14,7 +18,17 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       trim: true,
       minlength: [5, 'Username must be at least 5 characters long'],
       lowercase: true,
-      match: /^[a-z]/,
+      match: [/^[a-z]/, 'Username must start with a lowercase letter'],
+      validate: [
+        {
+          validator: (username: string) => isLowercase(username),
+          message: 'Username can not contain uppercase letters',
+        },
+        {
+          validator: (username: string) => isAlphanumeric(username),
+          message: 'Username can not contain special characters',
+        },
+      ],
       unique: true,
     },
     profilePictureUrl: {
@@ -26,7 +40,6 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
         message: (props: { value: string }) =>
           `${props.value} is not a valid url`,
       },
-      default: '',
     },
     email: {
       type: String,
@@ -64,7 +77,10 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 // hash the password before storing into db
 userSchema.pre('save', async function (next) {
   try {
-    await bcrypt.hash(this.password, config.bcrypt_salt_rounds!);
+    this.password = await bcrypt.hash(
+      this.password,
+      Number(config.bcrypt_salt_rounds!)
+    );
     next();
   } catch (error) {
     next(error as CallbackError);

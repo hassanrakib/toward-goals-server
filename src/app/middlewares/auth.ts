@@ -9,7 +9,7 @@ import { User } from '../modules/user/user.model';
 const auth = () => {
   return catchAsync(async (req, res, next) => {
     // Step 1: Get token and check token existence
-    const token = req.headers.authorization;
+    const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
       throw new AppError(

@@ -42,18 +42,20 @@ const upload = multer({
   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
   fileFilter,
 }).fields([
-  { name: 'file', maxCount: 1 }, // Single file
-  { name: 'files', maxCount: 10 }, // Multiple files
+  // define field names in the form and max image allowed
+  { name: 'image', maxCount: 1 },
+  { name: 'images', maxCount: 5 },
 ]);
 
 // upload file with handling errors gracefully
 const uploadWithErrorHandling = async (req: Request, res: Response) => {
-  return new Promise(() => {
+  return new Promise<void>((resolve) => {
     void upload(req, res, (err) => {
       if (err) {
         // rejects the promise, equivalent to reject(err)
         throw err;
       }
+      resolve();
     });
   });
 };

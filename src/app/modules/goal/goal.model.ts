@@ -1,6 +1,6 @@
 import { model, Schema } from 'mongoose';
 import { IGoal } from './goal.interface';
-import isURL from 'validator/es/lib/isURL';
+import { isURL } from 'validator';
 
 const goalSchema = new Schema<IGoal>(
   {
@@ -17,7 +17,6 @@ const goalSchema = new Schema<IGoal>(
         validator: (url: string) => isURL(url),
         message: 'Invalid image URL',
       },
-      default: '',
     },
     creator: {
       type: Schema.Types.ObjectId,

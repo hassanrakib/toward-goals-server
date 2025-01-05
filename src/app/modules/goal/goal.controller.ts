@@ -6,13 +6,19 @@ import { Request } from 'express';
 import { IGoal } from './goal.interface';
 
 const createGoal = catchAsync(async (req: Request<{}, {}, IGoal>, res) => {
-  const goal = await goalServices.insertGoalIntoDB(req.body);
+  // get the multer uploaded file by accessing req.files
+  // const files = req.files as Record<string, Express.Multer.File[]> | undefined;
+
+  console.log(req.files, req.body);
+
+  // const goal = await goalServices.insertGoalIntoDB(req.body, files?.image[0]);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: 'Created a goal successfully',
-    data: goal,
+    // data: goal,
+    data: 'test',
   });
 });
 
