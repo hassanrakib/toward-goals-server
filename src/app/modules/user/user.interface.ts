@@ -2,7 +2,7 @@ import { HydratedDocument, Model } from 'mongoose';
 
 export interface IUser {
   username: string;
-  profilePictureUrl?: string;
+  image?: string;
   email: string;
   password: string;
   isDeleted?: boolean;

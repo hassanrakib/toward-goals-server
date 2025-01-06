@@ -10,7 +10,7 @@ const insertUserIntoDB = async (user: IUser) => {
     _id: userDoc._id.toString(),
     username: userDoc.username,
     email: userDoc.email,
-    profilePictureUrl: userDoc.profilePictureUrl,
+    image: userDoc.image,
     isDeleted: userDoc.isDeleted,
   };
 

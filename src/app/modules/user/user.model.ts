@@ -31,7 +31,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       ],
       unique: true,
     },
-    profilePictureUrl: {
+    image: {
       type: String,
       trim: true,
       lowercase: true,
