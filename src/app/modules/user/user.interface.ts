@@ -16,7 +16,7 @@ export interface IUserMethods {
 // model type that knows about IUserMethods & static methods
 export interface UserModel extends Model<IUser, {}, IUserMethods> {
   // static methods
-  getUserWithPassword(
+  getUserFromDB(
     username: string
   ): Promise<HydratedDocument<IUser, IUserMethods>> | null;
 }

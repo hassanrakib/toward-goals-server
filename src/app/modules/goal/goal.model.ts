@@ -59,8 +59,8 @@ const goalSchema = new Schema<IGoal>(
     duration: {
       type: Number,
       required: [true, 'Duration is required'],
-      min: 7,
-      max: 365 * 5, // 5 years
+      min: [7, 'Duration must be at least 7 days'],
+      max: [365 * 5, 'Duration cannot exceed 5 years'], // 5 years
     },
   },
   {

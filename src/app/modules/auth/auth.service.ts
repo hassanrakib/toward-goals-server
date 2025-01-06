@@ -8,7 +8,7 @@ import config from '../../config';
 // through a successful login => we get accessToken & refreshToken
 const authenticateUser = async ({ username, password }: ILoginCredentials) => {
   // Step 1: Checking the user's existence in the db
-  const user = await User.getUserWithPassword(username);
+  const user = await User.getUserFromDB(username);
 
   if (!user) {
     throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid username or password');

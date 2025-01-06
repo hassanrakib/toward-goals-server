@@ -28,6 +28,7 @@ const createGoalSchema = z.object({
     //   .max(200, { message: 'User list exceeds the maximum allowed number' }),
     userLimit: z
       .number({ required_error: 'User limit is required' })
+      .int({ message: 'User limit can not be a decimal number' })
       .positive({ message: 'User limit must be at least 1' })
       .lte(200, { message: 'User limit cannot exceed 200' }),
     startDate: z
@@ -38,6 +39,7 @@ const createGoalSchema = z.object({
       }),
     duration: z
       .number({ required_error: 'Duration is required' })
+      .int({ message: 'Duration must be in days' })
       .gte(7, { message: 'Duration must be at least 7 days' })
       .lte(365 * 5, { message: 'Duration cannot exceed 5 years' }),
   }),

@@ -68,7 +68,11 @@ const fileUpload = () => {
     // Safely parse the JSON string from req.body.data
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      req.body = JSON.parse(req.body.data as string) as Record<string, unknown>;
+      if (req.body.data) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const jsonString = JSON.parse(req.body.data as string) as string;
+        req.body = JSON.parse(jsonString) as Record<string, unknown>;
+      }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       throw new AppError(httpStatus.BAD_REQUEST, 'Invalid JSON in form data');

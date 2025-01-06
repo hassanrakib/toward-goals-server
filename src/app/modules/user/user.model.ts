@@ -100,10 +100,9 @@ userSchema.methods.checkPassword = async function (plainTextPassword: string) {
 };
 
 // static methods
-userSchema.statics.getUserWithPassword = async function (username: string) {
-  // get user with the 'password' field as it was selected false in the schema for queries
+userSchema.statics.getUserFromDB = async function (username: string) {
   // 'this' refers to the model
-  return this.findOne({ username }).select('+password');
+  return this.findOne({ username });
 };
 
 export const User = model<IUser, UserModel>('User', userSchema);
