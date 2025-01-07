@@ -100,9 +100,18 @@ userSchema.methods.checkPassword = async function (plainTextPassword: string) {
 };
 
 // static methods
-userSchema.statics.getUserFromDB = async function (username: string) {
+userSchema.statics.getUserFromDB = async function (
+  username: string,
+  projection: keyof Omit<IUser, 'image' | 'password'> | '_id' | undefined,
+  selectPassword = false
+) {
   // 'this' refers to the model
-  return this.findOne({ username });
+  if (selectPassword) {
+    return this.findOne({ username }, projection && projection).select(
+      '+password'
+    );
+  }
+  return this.findOne({ username }, projection && projection);
 };
 
 export const User = model<IUser, UserModel>('User', userSchema);

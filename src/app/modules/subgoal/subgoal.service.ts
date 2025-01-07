@@ -1,36 +1,28 @@
-import saveImageToCloud from '../../utils/save-image-to-cloud';
+import httpStatus from 'http-status';
+import AppError from '../../errors/AppError';
+import { Goal } from '../goal/goal.model';
 import { User } from '../user/user.model';
 import { ISubgoal, ISubgoalFromClient } from './subgoal.interface';
 import { Subgoal } from './subgoal.model';
 
 const insertSubgoalIntoDB = async (
   userUsername: string,
-  subgoal: ISubgoalFromClient,
-  rewardImageFile: Express.Multer.File | undefined
+  subgoal: ISubgoalFromClient
 ) => {
   // get the user _id
-  const userId = (await User.getUserFromDB(userUsername))!._id;
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
-  // calculate points, required to redeem the reward
-  // for now: 1$ price reward will need = 20 gem points
-  const pointsRequired = subgoal.reward.price * 20;
+  // make sure goal exists in the db with the _id as it is coming from the client side
+  const goal = await Goal.findById(subgoal.goal, '_id');
+
+  if (!goal) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
+  }
 
   const newSubgoal: ISubgoal = {
     ...subgoal,
     user: userId,
-    pointsRequired,
   };
-
-  //   upload reward image, if sent from the client side
-  if (rewardImageFile) {
-    const uniqueSuffix = `${String(Date.now())}-${String(Math.round(Math.random() * 1e9))}`;
-    const rewardImageName = `${subgoal.reward.name.split(' ').join('-')}-for-${subgoal.title.split(' ').join('-')}-by-${userUsername}-${uniqueSuffix}`;
-    const rewardImageURL = await saveImageToCloud(
-      rewardImageName,
-      rewardImageFile.path
-    );
-    newSubgoal.reward.image = rewardImageURL;
-  }
 
   return Subgoal.create(newSubgoal);
 };

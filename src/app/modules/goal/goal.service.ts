@@ -9,7 +9,7 @@ const insertGoalIntoDB = async (
   goalImageFile: Express.Multer.File | undefined
 ) => {
   // get the creator
-  const creatorId = (await User.getUserFromDB(creatorUsername))!._id;
+  const creatorId = (await User.getUserFromDB(creatorUsername, '_id'))!._id;
 
   const newGoal: IGoal = {
     ...goal,

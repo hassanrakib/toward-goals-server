@@ -69,6 +69,7 @@ const fileUpload = () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (req.body.data) {
+        console.log(req.body);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const jsonString = JSON.parse(req.body.data as string) as string;
         req.body = JSON.parse(jsonString) as Record<string, unknown>;

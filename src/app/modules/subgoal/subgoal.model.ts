@@ -1,35 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { ISubgoalReward, ISubgoal } from './subgoal.interface';
-import { isURL } from 'validator';
-
-const rewardSchema = new Schema<ISubgoalReward>({
-  name: {
-    type: String,
-    required: [true, 'Reward name is required'],
-    trim: true,
-    minlength: [3, 'Reward name must be at least 3 characters long'],
-  },
-  image: {
-    type: String,
-    validate: {
-      validator: (url: string) => isURL(url),
-      message: 'Image must be a valid URL',
-    },
-  },
-  price: {
-    type: Number,
-    required: [true, 'Price is required'],
-    min: [1, 'Reward price must be a positive number'],
-  },
-  link: {
-    type: String,
-    required: [true, 'Reward link is required'],
-    validate: {
-      validator: (url: string) => isURL(url),
-      message: 'Link must be a valid URL',
-    },
-  },
-});
+import { ISubgoal } from './subgoal.interface';
 
 const subgoalSchema = new Schema<ISubgoal>({
   user: {
@@ -59,10 +29,6 @@ const subgoalSchema = new Schema<ISubgoal>({
     type: [String],
     validate: [
       {
-        validator: (milestones: string[]) => milestones.length >= 2,
-        message: 'There must be at least 2 milestones',
-      },
-      {
         validator: (milestones: string[]) => milestones.length <= 4,
         message: 'There must be no more than 4 milestones',
       },
@@ -73,19 +39,6 @@ const subgoalSchema = new Schema<ISubgoal>({
       },
     ],
     default: [],
-  },
-  reward: {
-    type: rewardSchema,
-    required: [true, 'Reward information is required'],
-  },
-  pointsRequired: {
-    type: Number,
-    required: [true, 'Points required is required'],
-    min: [1, 'Points required must be a positive number'],
-  },
-  isRewarded: {
-    type: Boolean,
-    default: false,
   },
   isCompleted: {
     type: Boolean,

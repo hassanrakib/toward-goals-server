@@ -17,7 +17,9 @@ export interface IUserMethods {
 export interface UserModel extends Model<IUser, {}, IUserMethods> {
   // static methods
   getUserFromDB(
-    username: string
+    username: string,
+    projection?: keyof Omit<IUser, 'image' | 'password'> | '_id',
+    selectPassword?: boolean
   ): Promise<HydratedDocument<IUser, IUserMethods>> | null;
 }
 

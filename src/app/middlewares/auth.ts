@@ -22,7 +22,10 @@ const auth = () => {
     const decodedUser = await verifyToken(token, config.jwt_access_secret!);
 
     // Step 3: Make sure user's existence in the db
-    const userInDb = await User.getUserFromDB(decodedUser.username);
+    const userInDb = await User.getUserFromDB(
+      decodedUser.username,
+      'isDeleted'
+    );
 
     if (!userInDb) {
       throw new AppError(httpStatus.NOT_FOUND, 'The user is not a valid user');
