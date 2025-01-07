@@ -49,13 +49,6 @@ const subgoalSchema = new Schema<ISubgoal>({
     minlength: [5, 'Title must be at least 5 characters long'],
     maxlength: [50, 'Title cannot exceed 50 characters'],
   },
-  image: {
-    type: String,
-    validate: {
-      validator: (url: string) => isURL(url),
-      message: 'Invalid image URL',
-    },
-  },
   duration: {
     type: Number,
     required: [true, 'Duration is required'],

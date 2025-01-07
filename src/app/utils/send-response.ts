@@ -1,6 +1,6 @@
 import { Response } from 'express';
 
-interface SuccessResponse<T> {
+export interface ISuccessResponse<T> {
   statusCode: number;
   success: true;
   message: string;
@@ -15,7 +15,7 @@ interface SuccessResponse<T> {
 
 const sendResponse = <T>(
   res: Response,
-  successResponse: SuccessResponse<T>
+  successResponse: ISuccessResponse<T>
 ) => {
   res.status(successResponse.statusCode).json(successResponse);
 };

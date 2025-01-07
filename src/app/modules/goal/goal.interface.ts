@@ -10,3 +10,5 @@ export interface IGoal {
   startDate: Date;
   duration: number;
 }
+
+export type IGoalFromClient = Omit<IGoal, 'creator' | 'users'>;

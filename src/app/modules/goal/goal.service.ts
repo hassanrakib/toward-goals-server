@@ -1,12 +1,12 @@
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 import { User } from '../user/user.model';
-import { IGoal } from './goal.interface';
+import { IGoal, IGoalFromClient } from './goal.interface';
 import { Goal } from './goal.model';
 
 const insertGoalIntoDB = async (
   creatorUsername: string,
-  goal: IGoal,
-  file: Express.Multer.File | undefined
+  goal: IGoalFromClient,
+  goalImageFile: Express.Multer.File | undefined
 ) => {
   // get the creator
   const creatorId = (await User.getUserFromDB(creatorUsername))!._id;
@@ -18,9 +18,11 @@ const insertGoalIntoDB = async (
     users: [creatorId],
   };
 
-  if (file) {
-    const imageName = `${goal.title.split(' ').join('-')}-created-by-${creatorUsername}`;
-    const goalImageURL = await saveImageToCloud(imageName, file.path);
+  // upload goal image, if sent from the client side
+  if (goalImageFile) {
+    const uniqueSuffix = `${String(Date.now())}-${String(Math.round(Math.random() * 1e9))}`;
+    const imageName = `${goal.title.split(' ').join('-')}-created-by-${creatorUsername}-${uniqueSuffix}`;
+    const goalImageURL = await saveImageToCloud(imageName, goalImageFile.path);
     newGoal.image = goalImageURL;
   }
   return Goal.create(newGoal);

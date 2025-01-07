@@ -6,7 +6,6 @@ const createSubgoalRewardSchema = z.object({
     .string({ required_error: 'Reward name is required' })
     .trim()
     .min(3, 'Reward name must be at least 3 characters long'),
-  image: z.string().url('Image must be a valid URL').optional(),
   price: z
     .number({
       required_error: 'Reward price is required',

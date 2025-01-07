@@ -11,7 +11,6 @@ export interface ISubgoal {
   user: Types.ObjectId;
   goal: Types.ObjectId;
   title: string;
-  image?: string;
   duration: number;
   keyMilestones?: string[];
   reward: ISubgoalReward;
@@ -19,3 +18,5 @@ export interface ISubgoal {
   isCompleted?: boolean;
   isRewarded?: boolean;
 }
+
+export type ISubgoalFromClient = Omit<ISubgoal, 'user' | 'pointsRequired'>;
