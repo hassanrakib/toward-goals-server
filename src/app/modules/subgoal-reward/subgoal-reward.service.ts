@@ -38,7 +38,7 @@ const insertSubgoalRewardIntoDB = async (
   //   upload reward image, if sent from the client side
   if (rewardImageFile) {
     const uniqueSuffix = `${String(Date.now())}-${String(Math.round(Math.random() * 1e9))}`;
-    const rewardImageName = `${subgoalReward.name.split(' ').join('-')}-for-${subgoal.title.split(' ').join('-')}-by-${userUsername}-${uniqueSuffix}`;
+    const rewardImageName = `${subgoalReward.name.split(' ').join('-').toLowerCase()}-for-${userUsername}-${uniqueSuffix}`;
     const rewardImageURL = await saveImageToCloud(
       rewardImageName,
       rewardImageFile.path
