@@ -2,7 +2,7 @@ import app from './app';
 import mongoose from 'mongoose';
 import config from './app/config';
 import { Server } from 'http';
-import { seedRequirementsLevels } from './app/db';
+import { seedLevels } from './app/db';
 
 let server: Server;
 
@@ -12,7 +12,7 @@ async function main() {
     await mongoose.connect(config.db_connection_uri!);
 
     // seed levels and every requirement levels
-    seedRequirementsLevels();
+    await seedLevels();
 
     // create server
     server = app.listen(config.port, () => {

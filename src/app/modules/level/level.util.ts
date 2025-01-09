@@ -1,4 +1,5 @@
-import { IRequirementLevel, RequirementsName } from './level.interface';
+import { ILevel, IRequirementLevel, RequirementsName } from './level.interface';
+import { RequirementLevel } from './level.model';
 
 export const createRequirementsLevels = (): IRequirementLevel[] => {
   //   get the requirements array of requirements name
@@ -15,10 +16,66 @@ export const createRequirementsLevels = (): IRequirementLevel[] => {
         level,
         rewardPointsPerDay: level + 1,
         minPercentage: level === 0 ? 0 : level * 10 + 1,
-        maxPercentage: level * 10 + 1 + 9,
+        maxPercentage: level === 0 ? 10 : level * 10 + 1 + 9,
       });
     }
   });
 
   return requirementsLevels;
+};
+
+const getRequirementLevelId = async (
+  requirementName: RequirementsName,
+  level: number
+) => {
+  const requirementLevel = await RequirementLevel.findOne(
+    { name: requirementName, level },
+    '_id'
+  ).lean();
+
+  if (!requirementLevel) {
+    throw new Error('Error in getting requirementLevel');
+  }
+
+  return requirementLevel._id;
+};
+
+export const createLevels = async () => {
+  // keep the badge images in the ascending order of levels
+  const badgeImages = [
+    'https://img.icons8.com/color/48/0-cute.png',
+    'https://img.icons8.com/arcade/48/1-circle-c.png',
+    'https://img.icons8.com/arcade/48/1-circle-c.png',
+    'https://img.icons8.com/arcade/48/1-circle-c.png',
+    'https://img.icons8.com/arcade/48/1-circle-c.png',
+    'https://img.icons8.com/arcade/48/1-circle-c.png',
+    'https://img.icons8.com/arcade/48/1-circle-c.png',
+    'https://img.icons8.com/arcade/48/1-circle-c.png',
+    'https://img.icons8.com/arcade/48/1-circle-c.png',
+  ];
+  const levels: ILevel[] = [];
+  // create levels and push them to the levels variable
+  for (let level = 0; level <= 9; level++) {
+    levels.push({
+      level,
+      badgeImage: badgeImages[level],
+      levelUpPoint: level * 10 + 10,
+      requirements: {
+        consistency: await getRequirementLevelId(
+          RequirementsName.Consistency,
+          level
+        ),
+        deepFocus: await getRequirementLevelId(
+          RequirementsName.DeepFocus,
+          level
+        ),
+        commitment: await getRequirementLevelId(
+          RequirementsName.Commitment,
+          level
+        ),
+      },
+    });
+  }
+
+  return levels;
 };

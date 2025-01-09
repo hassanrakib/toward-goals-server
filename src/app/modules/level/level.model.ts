@@ -1,5 +1,11 @@
 import { model, Schema } from 'mongoose';
-import { IRequirementLevel, RequirementsName } from './level.interface';
+import {
+  ILevel,
+  IRequirementLevel,
+  LevelRequirements,
+  RequirementsName,
+} from './level.interface';
+import validator from 'validator';
 
 const requirementLevelSchema = new Schema<IRequirementLevel>({
   name: {
@@ -41,6 +47,7 @@ const requirementLevelSchema = new Schema<IRequirementLevel>({
     required: [true, 'Maximum percentage is required'],
     validate: {
       validator: function (value: number): boolean {
+        if (this.level === 0) return value === 10;
         return value === this.minPercentage + 9;
       },
       message: 'Maximum percentage must be => minPercentage + 9',
@@ -48,7 +55,55 @@ const requirementLevelSchema = new Schema<IRequirementLevel>({
   },
 });
 
+const levelRequirementsSchema = new Schema<LevelRequirements>({
+  consistency: {
+    type: Schema.Types.ObjectId,
+    required: [true, 'Consistency requirement is required'],
+  },
+  deepFocus: {
+    type: Schema.Types.ObjectId,
+    required: [true, 'Deep focus requirement is required'],
+  },
+  commitment: {
+    type: Schema.Types.ObjectId,
+    required: [true, 'Commitment requirement is required'],
+  },
+});
+
+const levelSchema = new Schema<ILevel>({
+  level: {
+    type: Number,
+    required: [true, 'Level is required'],
+    min: [0, 'Level must be at least 0'],
+    max: [9, 'Level cannot exceed 9'],
+  },
+  badgeImage: {
+    type: String,
+    required: [true, 'Badge image URL is required'],
+    validate: {
+      validator: (value: string) => validator.isURL(value),
+      message: 'Badge image must be a valid URL',
+    },
+  },
+  levelUpPoint: {
+    type: Number,
+    required: [true, 'Level-up point is required'],
+    validate: {
+      validator: function (value: number): boolean {
+        return value === this.level * 10 + 10;
+      },
+      message: 'Level-up point must be equal to level * 10 + 10',
+    },
+  },
+  requirements: {
+    type: levelRequirementsSchema,
+    required: [true, 'Requirements is required'],
+  },
+});
+
 export const RequirementLevel = model<IRequirementLevel>(
   'RequirementLevel',
   requirementLevelSchema
 );
+
+export const Level = model<ILevel>('Level', levelSchema);

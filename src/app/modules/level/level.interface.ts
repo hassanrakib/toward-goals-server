@@ -24,3 +24,5 @@ export interface ILevel {
     commitment: Types.ObjectId;
   };
 }
+
+export type LevelRequirements = ILevel['requirements'];
