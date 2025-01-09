@@ -24,6 +24,19 @@ const insertSubgoalRewardIntoDB = async (
     throw new AppError(httpStatus.NOT_FOUND, 'Subgoal is not valid');
   }
 
+  // can not add more than one reward
+  const addedSubgoalReward = await SubgoalReward.findOne(
+    { subgoal: subgoal._id },
+    '_id'
+  );
+
+  if (addedSubgoalReward) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Subgoal reward is already added'
+    );
+  }
+
   // calculate points, required to redeem the reward
   // for now: 1$ price reward will need = 20 gem points
   const pointsRequired = subgoalReward.price * 20;
