@@ -52,6 +52,7 @@ export const createLevels = async () => {
     'https://img.icons8.com/arcade/48/1-circle-c.png',
     'https://img.icons8.com/arcade/48/1-circle-c.png',
     'https://img.icons8.com/arcade/48/1-circle-c.png',
+    'https://img.icons8.com/arcade/48/1-circle-c.png',
   ];
   const levels: ILevel[] = [];
   // create levels and push them to the levels variable
