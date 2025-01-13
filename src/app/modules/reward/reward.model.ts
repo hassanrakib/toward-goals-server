@@ -3,16 +3,6 @@ import { IReward } from './reward.interface';
 import { isURL } from 'validator';
 
 const rewardSchema = new Schema<IReward>({
-  // user: {
-  //   type: Schema.Types.ObjectId,
-  //   required: [true, 'User is required'],
-  //   ref: 'User',
-  // },
-  // subgoal: {
-  //   type: Schema.Types.ObjectId,
-  //   required: [true, 'Subgoal is required'],
-  //   ref: 'Subgoal',
-  // },
   name: {
     type: String,
     required: [true, 'Reward name is required'],
@@ -49,10 +39,6 @@ const rewardSchema = new Schema<IReward>({
     required: [true, 'Points required is required'],
     min: [1, 'Points required must be a positive number'],
   },
-  // isRewarded: {
-  //   type: Boolean,
-  //   default: false,
-  // },
 });
 
 export const Reward = model<IReward>('Reward', rewardSchema);
