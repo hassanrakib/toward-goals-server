@@ -1,6 +1,6 @@
 // import { Types } from 'mongoose';
 
-export interface ISubgoalReward {
+export interface IReward {
   // user: Types.ObjectId;
   // subgoal: Types.ObjectId;
   name: string;
@@ -12,4 +12,4 @@ export interface ISubgoalReward {
   // isRewarded?: boolean;
 }
 
-export type ISubgoalRewardFromClient = Omit<ISubgoalReward, 'pointsRequired'>;
+export type RewardFromClient = Omit<IReward, 'pointsRequired'>;

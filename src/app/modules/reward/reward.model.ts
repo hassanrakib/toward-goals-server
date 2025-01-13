@@ -1,8 +1,8 @@
 import { model, Schema } from 'mongoose';
-import { ISubgoalReward } from './subgoal-reward.interface';
+import { IReward } from './reward.interface';
 import { isURL } from 'validator';
 
-const subgoalRewardSchema = new Schema<ISubgoalReward>({
+const rewardSchema = new Schema<IReward>({
   // user: {
   //   type: Schema.Types.ObjectId,
   //   required: [true, 'User is required'],
@@ -55,7 +55,4 @@ const subgoalRewardSchema = new Schema<ISubgoalReward>({
   // },
 });
 
-export const SubgoalReward = model<ISubgoalReward>(
-  'SubgoalReward',
-  subgoalRewardSchema
-);
+export const Reward = model<IReward>('Reward', rewardSchema);

@@ -1,17 +1,17 @@
 import { Request } from 'express';
 import catchAsync from '../../utils/catch-async';
-import { ISubgoalRewardFromClient } from './subgoal-reward.interface';
+import { RewardFromClient } from './reward.interface';
 import { getMulterUploadedFile } from '../../utils/get-multer-uploads';
 import httpStatus from 'http-status';
 import sendResponse from '../../utils/send-response';
-import { subgoalRewardServices } from './subgoal-reward.service';
+import { rewardServices } from './reward.service';
 
-const createSubgoalReward = catchAsync(
-  async (req: Request<{}, {}, ISubgoalRewardFromClient>, res) => {
+const createReward = catchAsync(
+  async (req: Request<{}, {}, RewardFromClient>, res) => {
     // get the multer uploaded file
     const rewardImageFile = getMulterUploadedFile(req);
 
-    const subgoalReward = await subgoalRewardServices.insertSubgoalRewardIntoDB(
+    const reward = await rewardServices.insertRewardIntoDB(
       req.body,
       rewardImageFile
     );
@@ -19,12 +19,12 @@ const createSubgoalReward = catchAsync(
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
-      message: 'Subgoal reward creation successful',
-      data: subgoalReward,
+      message: 'Reward creation successful',
+      data: reward,
     });
   }
 );
 
-export const subgoalRewardControllers = {
-  createSubgoalReward,
+export const rewardControllers = {
+  createReward,
 };

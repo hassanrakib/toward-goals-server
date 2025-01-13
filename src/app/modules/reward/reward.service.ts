@@ -3,15 +3,12 @@
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 // import { Subgoal } from '../subgoal/subgoal.model';
 // import { User } from '../user/user.model';
-import {
-  ISubgoalReward,
-  ISubgoalRewardFromClient,
-} from './subgoal-reward.interface';
-import { SubgoalReward } from './subgoal-reward.model';
+import { IReward, RewardFromClient } from './reward.interface';
+import { Reward } from './reward.model';
 
-const insertSubgoalRewardIntoDB = async (
+const insertRewardIntoDB = async (
   // userUsername: string,
-  subgoalReward: ISubgoalRewardFromClient,
+  reward: RewardFromClient,
   rewardImageFile: Express.Multer.File | undefined
 ) => {
   // get the user _id
@@ -39,28 +36,28 @@ const insertSubgoalRewardIntoDB = async (
 
   // calculate points, required to redeem the reward
   // for now: 1$ price reward will need = 20 gem points
-  const pointsRequired = subgoalReward.price * 20;
+  const pointsRequired = reward.price * 20;
 
   //   add required properties
-  const newSubgoalReward: ISubgoalReward = {
-    ...subgoalReward,
+  const newReward: IReward = {
+    ...reward,
     pointsRequired,
   };
 
   //   upload reward image, if sent from the client side
   if (rewardImageFile) {
     const uniqueSuffix = `${String(Date.now())}-${String(Math.round(Math.random() * 1e9))}`;
-    const rewardImageName = `${subgoalReward.name.split(' ').join('-').toLowerCase()}-${uniqueSuffix}`;
+    const rewardImageName = `${reward.name.split(' ').join('-').toLowerCase()}-${uniqueSuffix}`;
     const rewardImageURL = await saveImageToCloud(
       rewardImageName,
       rewardImageFile.path
     );
-    newSubgoalReward.image = rewardImageURL;
+    newReward.image = rewardImageURL;
   }
 
-  return SubgoalReward.create(newSubgoalReward);
+  return Reward.create(newReward);
 };
 
-export const subgoalRewardServices = {
-  insertSubgoalRewardIntoDB,
+export const rewardServices = {
+  insertRewardIntoDB,
 };

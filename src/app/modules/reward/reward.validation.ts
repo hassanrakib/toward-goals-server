@@ -1,7 +1,7 @@
 // import { isMongoId } from 'validator';
 import { z } from 'zod';
 
-const createSubgoalRewardSchema = z.object({
+const createRewardSchema = z.object({
   body: z.object({
     // subgoal: z
     //   .string({ required_error: 'Subgoal is required' })
@@ -31,4 +31,4 @@ const createSubgoalRewardSchema = z.object({
   }),
 });
 
-export const subgoalRewardValidations = { createSubgoalRewardSchema };
+export const rewardValidations = { createRewardSchema };
