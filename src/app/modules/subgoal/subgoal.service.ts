@@ -1,17 +1,21 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { Goal } from '../goal/goal.model';
-import { User } from '../user/user.model';
-import { ISubgoal, ISubgoalFromClient } from './subgoal.interface';
+// import { User } from '../user/user.model';
+import { ISubgoal } from './subgoal.interface';
 import { Subgoal } from './subgoal.model';
 import { addDays, isAfter } from 'date-fns';
 
 const insertSubgoalIntoDB = async (
+  goalId: string,
   userUsername: string,
-  subgoal: ISubgoalFromClient
+  subgoal: ISubgoal
 ) => {
+  // get the user _id to use it in the goal progress query
+  // const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
   // make sure goal exists in the db with the goal's _id as it is coming from the client side
-  const goal = await Goal.findById(subgoal.goal, '_id');
+  const goal = await Goal.findById(goalId, '_id startDate duration');
 
   if (!goal) {
     throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
@@ -21,17 +25,17 @@ const insertSubgoalIntoDB = async (
   /**** do it here after creating the goal progress module ****/
 
   // make sure that this is going to be the only subgoal with isCompleted: false
-  const incompleteSubgoal = await Subgoal.findOne(
-    { isCompleted: false },
-    '_id title'
-  );
+  // const incompleteSubgoal = await Subgoal.findOne(
+  //   { isCompleted: false },
+  //   '_id title'
+  // );
 
-  if (incompleteSubgoal) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      `Complete ${incompleteSubgoal.title} before stepping into your next subgoal.`
-    );
-  }
+  // if (incompleteSubgoal) {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     `Complete ${incompleteSubgoal.title} before stepping into your next subgoal.`
+  //   );
+  // }
 
   // subgoal can only be created after the goal's startDate
   if (isAfter(new Date(), goal.startDate)) {
@@ -48,15 +52,7 @@ const insertSubgoalIntoDB = async (
     );
   }
 
-  // get the user _id
-  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
-
-  const newSubgoal: ISubgoal = {
-    ...subgoal,
-    user: userId,
-  };
-
-  return Subgoal.create(newSubgoal);
+  return Subgoal.create(subgoal);
 };
 
 export const subgoalServices = {

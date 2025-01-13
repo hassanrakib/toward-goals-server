@@ -12,7 +12,6 @@ const createSubgoalReward = catchAsync(
     const rewardImageFile = getMulterUploadedFile(req);
 
     const subgoalReward = await subgoalRewardServices.insertSubgoalRewardIntoDB(
-      req.user.username,
       req.body,
       rewardImageFile
     );

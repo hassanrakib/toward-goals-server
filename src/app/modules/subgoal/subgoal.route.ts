@@ -7,7 +7,7 @@ import auth from '../../middlewares/auth';
 const router = express.Router();
 
 router.post(
-  '/create-subgoal',
+  '/:goalId/create-subgoal',
   auth(),
   validateRequest(subgoalValidations.createSubgoalSchema),
   subgoalControllers.createSubgoal

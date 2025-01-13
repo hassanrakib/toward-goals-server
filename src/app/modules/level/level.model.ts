@@ -50,7 +50,8 @@ const requirementLevelSchema = new Schema<IRequirementLevel>({
         if (this.level === 0) return value === 10;
         return value === this.minPercentage + 9;
       },
-      message: 'Maximum percentage must be => minPercentage + 9',
+      message:
+        'Maximum percentage must be 10 for level zero, for other levels => minPercentage + 9',
     },
   },
 });

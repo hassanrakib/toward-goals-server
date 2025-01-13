@@ -1,13 +1,13 @@
-import { isMongoId } from 'validator';
+// import { isMongoId } from 'validator';
 import { z } from 'zod';
 
 const createSubgoalRewardSchema = z.object({
   body: z.object({
-    subgoal: z
-      .string({ required_error: 'Subgoal is required' })
-      .refine((id) => isMongoId(id), {
-        message: 'Subgoal id is not valid',
-      }),
+    // subgoal: z
+    //   .string({ required_error: 'Subgoal is required' })
+    //   .refine((id) => isMongoId(id), {
+    //     message: 'Subgoal id is not valid',
+    //   }),
     name: z
       .string({ required_error: 'Reward name is required' })
       .trim()
@@ -22,7 +22,12 @@ const createSubgoalRewardSchema = z.object({
         required_error: 'Reward link is required',
       })
       .url('Reward link must be a valid URL'),
-    isRewarded: z.boolean().optional().default(false),
+    usageCount: z
+      .number()
+      .int({ message: 'User count must be integer' })
+      .min(0, { message: 'Usage count must be atleast 0' })
+      .optional(),
+    // isRewarded: z.boolean().optional().default(false),
   }),
 });
 

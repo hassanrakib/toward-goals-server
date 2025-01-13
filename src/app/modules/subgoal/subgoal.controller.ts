@@ -1,13 +1,15 @@
 import { Request } from 'express';
 import catchAsync from '../../utils/catch-async';
-import { ISubgoalFromClient } from './subgoal.interface';
+// import { ISubgoalFromClient } from './subgoal.interface';
 import { subgoalServices } from './subgoal.service';
 import sendResponse from '../../utils/send-response';
 import httpStatus from 'http-status';
+import { ISubgoal } from './subgoal.interface';
 
 const createSubgoal = catchAsync(
-  async (req: Request<{}, {}, ISubgoalFromClient>, res) => {
+  async (req: Request<{ goalId?: string }, {}, ISubgoal>, res) => {
     const subgoal = await subgoalServices.insertSubgoalIntoDB(
+      req.params.goalId!,
       req.user.username,
       req.body
     );
