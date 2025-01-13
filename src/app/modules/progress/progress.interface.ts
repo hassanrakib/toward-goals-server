@@ -5,7 +5,7 @@ export interface ISubgoalProgress {
   goal: Types.ObjectId;
   subgoal: Types.ObjectId;
   keyMilestones?: string[];
-  reward: Types.ObjectId;
+  reward?: Types.ObjectId;
   isCompleted?: boolean;
   isRewarded?: boolean;
 }

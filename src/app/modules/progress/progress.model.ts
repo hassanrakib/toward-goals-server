@@ -39,7 +39,6 @@ const subgoalProgressSchema = new Schema<ISubgoalProgress>(
     },
     reward: {
       type: Schema.Types.ObjectId,
-      required: [true, 'Reward is required'],
       ref: 'Reward',
     },
     isCompleted: {
@@ -48,7 +47,6 @@ const subgoalProgressSchema = new Schema<ISubgoalProgress>(
     },
     isRewarded: {
       type: Boolean,
-      default: false,
     },
   },
   {
@@ -56,59 +54,64 @@ const subgoalProgressSchema = new Schema<ISubgoalProgress>(
   }
 );
 
-const habitProgressSchema = new Schema<IHabitProgress>({
-  user: {
-    type: Schema.Types.ObjectId,
-    required: [true, 'User is required'],
-    ref: 'User',
-  },
-  goal: {
-    type: Schema.Types.ObjectId,
-    required: [true, 'Goal is required'],
-    ref: 'Goal',
-  },
-  habit: {
-    type: Schema.Types.ObjectId,
-    required: [true, 'Habit is required'],
-    ref: 'Habit',
-  },
-  totalUnitCompleted: {
-    type: Number,
-    min: [0, 'Total completed unit must be a non-negative number'],
-    validate: {
-      validator: Number.isInteger,
-      message: 'Total completed unit must be an integer',
+const habitProgressSchema = new Schema<IHabitProgress>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'User is required'],
+      ref: 'User',
     },
-    default: 0,
-  },
-  miniCompletion: {
-    type: Number,
-    min: [0, 'Mini completion must be a non-negative number'],
-    validate: {
-      validator: Number.isInteger,
-      message: 'Mini completion must be an integer',
+    goal: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'Goal is required'],
+      ref: 'Goal',
     },
-    default: 0,
-  },
-  plusCompletion: {
-    type: Number,
-    min: [0, 'Plus completion must be a non-negative number'],
-    validate: {
-      validator: Number.isInteger,
-      message: 'Plus completion must be an integer',
+    habit: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'Habit is required'],
+      ref: 'Habit',
     },
-    default: 0,
-  },
-  eliteCompletion: {
-    type: Number,
-    min: [0, 'Elite completion must be a non-negative number'],
-    validate: {
-      validator: Number.isInteger,
-      message: 'Elite completion must be an integer',
+    totalUnitCompleted: {
+      type: Number,
+      min: [0, 'Total completed unit must be a non-negative number'],
+      validate: {
+        validator: Number.isInteger,
+        message: 'Total completed unit must be an integer',
+      },
+      default: 0,
     },
-    default: 0,
+    miniCompletion: {
+      type: Number,
+      min: [0, 'Mini completion must be a non-negative number'],
+      validate: {
+        validator: Number.isInteger,
+        message: 'Mini completion must be an integer',
+      },
+      default: 0,
+    },
+    plusCompletion: {
+      type: Number,
+      min: [0, 'Plus completion must be a non-negative number'],
+      validate: {
+        validator: Number.isInteger,
+        message: 'Plus completion must be an integer',
+      },
+      default: 0,
+    },
+    eliteCompletion: {
+      type: Number,
+      min: [0, 'Elite completion must be a non-negative number'],
+      validate: {
+        validator: Number.isInteger,
+        message: 'Elite completion must be an integer',
+      },
+      default: 0,
+    },
   },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const progressSchema = new Schema<IProgress>({
   user: {
