@@ -10,6 +10,8 @@ export interface ISubgoalProgress {
   isRewarded?: boolean;
 }
 
+export type SubgoalProgressFromClient = Omit<ISubgoalProgress, 'user'>;
+
 export interface IHabitProgress {
   user: Types.ObjectId;
   goal: Types.ObjectId;
@@ -19,6 +21,8 @@ export interface IHabitProgress {
   plusCompletion?: number;
   eliteCompletion?: number;
 }
+
+export type HabitProgressFromClient = Omit<IHabitProgress, 'user'>;
 
 export interface IProgress {
   user: Types.ObjectId;
@@ -38,3 +42,5 @@ export interface IProgress {
   };
   isCompleted?: boolean;
 }
+
+export type ProgressFromClient = Omit<IProgress, 'user'>;
