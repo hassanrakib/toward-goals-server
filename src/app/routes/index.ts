@@ -5,6 +5,7 @@ import { goalRoutes } from '../modules/goal/goal.route';
 import { subgoalRoutes } from '../modules/subgoal/subgoal.route';
 import { rewardRoutes } from '../modules/reward/reward.route';
 import { habitRoutes } from '../modules/habit/habit.route';
+import { progressRoutes } from '../modules/progress/progress.route';
 
 // it's a mini application also a route handler itself
 // every http request to '/api/v1' will be handled by this router
@@ -34,6 +35,10 @@ const routes = [
   {
     path: '/rewards',
     handler: rewardRoutes,
+  },
+  {
+    path: '/progress',
+    handler: progressRoutes,
   },
 ];
 

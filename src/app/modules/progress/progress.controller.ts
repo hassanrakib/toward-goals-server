@@ -4,6 +4,7 @@ import sendResponse from '../../utils/send-response';
 import { Request } from 'express';
 import {
   HabitProgressFromClient,
+  ProgressFromClient,
   SubgoalProgressFromClient,
 } from './progress.interface';
 import { progressServices } from './progress.service';
@@ -40,7 +41,24 @@ const createHabitProgress = catchAsync(
   }
 );
 
+const createProgress = catchAsync(
+  async (req: Request<{}, {}, ProgressFromClient>, res) => {
+    const progress = await progressServices.insertProgressIntoDB(
+      req.user.username,
+      req.body
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Progress creation successful',
+      data: progress,
+    });
+  }
+);
+
 export const progressControllers = {
   createSubgoalProgress,
   createHabitProgress,
+  createProgress,
 };
