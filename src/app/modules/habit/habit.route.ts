@@ -13,4 +13,11 @@ router.post(
   habitControllers.createHabitUnit
 );
 
+router.post(
+  '/:goalId/create-habit',
+  auth(),
+  validateRequest(habitValidations.createHabitSchema),
+  habitControllers.createHabit
+);
+
 export const habitRoutes = router;

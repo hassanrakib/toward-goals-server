@@ -7,7 +7,11 @@ import httpStatus from 'http-status';
 
 const createHabitUnit = catchAsync(
   async (req: Request<{ goalId?: string }, {}, IHabitUnit>, res) => {
-    const habitUnit = await habitServices.insertHabitUnitIntoDB(req.body);
+    const habitUnit = await habitServices.insertHabitUnitIntoDB(
+      req.params.goalId!,
+      req.user.username,
+      req.body
+    );
 
     sendResponse(res, {
       success: true,
@@ -18,16 +22,22 @@ const createHabitUnit = catchAsync(
   }
 );
 
-const createHabit = catchAsync(async (req: Request<{}, {}, IHabit>, res) => {
-  const habit = await habitServices.insertHabitIntoDB(req.body);
+const createHabit = catchAsync(
+  async (req: Request<{ goalId?: string }, {}, IHabit>, res) => {
+    const habit = await habitServices.insertHabitIntoDB(
+      req.params.goalId!,
+      req.user.username,
+      req.body
+    );
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: 'Habit creation successful',
-    data: habit,
-  });
-});
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Habit creation successful',
+      data: habit,
+    });
+  }
+);
 
 export const habitControllers = {
   createHabitUnit,

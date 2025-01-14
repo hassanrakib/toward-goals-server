@@ -118,6 +118,35 @@ const insertHabitProgressIntoDB = async (
     throw new AppError(httpStatus.NOT_FOUND, 'Subgoal is not valid');
   }
 
+  // check if the user is really into the goal
+  const progress = await Progress.findOne(
+    { goal: goal._id, user: userId },
+    '_id isCompleted'
+  ).lean();
+
+  if (!progress) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this goal');
+  }
+  // check if the goal is already completed by the user
+  if (progress.isCompleted) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already completed the goal'
+    );
+  }
+  // check if there are 3 habits already created for the goal
+  const habitProgressCount = await HabitProgress.countDocuments({
+    user: userId,
+    goal: goal._id,
+  });
+
+  if (habitProgressCount === 3) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already created three habits for this goal'
+    );
+  }
+
   const newHabitProgress: IHabitProgress = {
     ...habitProgress,
     user: userId,
@@ -160,6 +189,16 @@ const insertProgressIntoDB = async (
         `Requirement level in ${key} is not valid`
       );
     }
+  }
+
+  // check if the user is already into the goal
+  const existingProgress = await Progress.findOne(
+    { goal: goal._id, user: userId },
+    '_id'
+  ).lean();
+
+  if (existingProgress) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are already into the goal');
   }
 
   const newProgress: IProgress = {
