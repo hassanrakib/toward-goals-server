@@ -1,10 +1,11 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { Goal } from '../goal/goal.model';
-// import { User } from '../user/user.model';
+import { User } from '../user/user.model';
 import { ISubgoal } from './subgoal.interface';
 import { Subgoal } from './subgoal.model';
 import { addDays, isAfter } from 'date-fns';
+import { Progress, SubgoalProgress } from '../progress/progress.model';
 
 const insertSubgoalIntoDB = async (
   goalId: string,
@@ -12,30 +13,45 @@ const insertSubgoalIntoDB = async (
   subgoal: ISubgoal
 ) => {
   // get the user _id to use it in the goal progress query
-  // const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
   // make sure goal exists in the db with the goal's _id as it is coming from the client side
-  const goal = await Goal.findById(goalId, '_id startDate duration');
+  const goal = await Goal.findById(goalId, '_id startDate duration').lean();
 
   if (!goal) {
     throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
   }
 
-  // don't allow creating subgoal when the goal is already completed
-  /**** do it here after creating the goal progress module ****/
+  // don't allow creating subgoal when progress for that goal is not found
+  // also, don't allow if the goal progress tells that the user already completed the goal
+  const progress = await Progress.findOne(
+    { goal: goalId, user: userId },
+    '_id isCompleted'
+  ).lean();
 
-  // make sure that this is going to be the only subgoal with isCompleted: false
-  // const incompleteSubgoal = await Subgoal.findOne(
-  //   { isCompleted: false },
-  //   '_id title'
-  // );
+  if (!progress) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this goal');
+  }
 
-  // if (incompleteSubgoal) {
-  //   throw new AppError(
-  //     httpStatus.BAD_REQUEST,
-  //     `Complete ${incompleteSubgoal.title} before stepping into your next subgoal.`
-  //   );
-  // }
+  if (progress.isCompleted) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already completed the goal'
+    );
+  }
+
+  // make sure that there is no subgoalProgress with isCompleted: false for this particular goal & user
+  const incompleteSubgoalProgress = await SubgoalProgress.findOne(
+    { isCompleted: false, user: userId, goal: goal._id },
+    '_id'
+  ).lean();
+
+  if (incompleteSubgoalProgress) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `You have a subgoal incomplete within this goal`
+    );
+  }
 
   // subgoal can only be created after the goal's startDate
   if (isAfter(new Date(), goal.startDate)) {

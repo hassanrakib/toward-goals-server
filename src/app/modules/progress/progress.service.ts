@@ -14,6 +14,7 @@ import { HabitProgress, Progress, SubgoalProgress } from './progress.model';
 import { Goal } from '../goal/goal.model';
 import { Habit } from '../habit/habit.model';
 import { Level, RequirementLevel } from '../level/level.model';
+import { addDays, isAfter } from 'date-fns';
 
 const insertSubgoalProgressIntoDB = async (
   userUsername: string,
@@ -23,17 +24,69 @@ const insertSubgoalProgressIntoDB = async (
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
   //   check if goal exists
-  const goal = await Goal.findById(subgoalProgress.goal, '_id').lean();
+  const goal = await Goal.findById(
+    subgoalProgress.goal,
+    '_id startDate duration'
+  ).lean();
 
   if (!goal) {
     throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
   }
 
   //   check if subgoal exists
-  const subgoal = await Subgoal.findById(subgoalProgress.subgoal, '_id').lean();
+  const subgoal = await Subgoal.findById(
+    subgoalProgress.subgoal,
+    '_id duration'
+  ).lean();
 
   if (!subgoal) {
     throw new AppError(httpStatus.NOT_FOUND, 'Subgoal is not valid');
+  }
+
+  // don't allow creating subgoalProgress when progress for the goal is not found
+  // also, don't allow if the goal progress tells that the user already completed the goal
+  const progress = await Progress.findOne(
+    { goal: goal._id, user: userId },
+    '_id isCompleted'
+  ).lean();
+
+  if (!progress) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this goal');
+  }
+
+  if (progress.isCompleted) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have already completed the goal'
+    );
+  }
+
+  // make sure that there is no subgoalProgress with isCompleted: false for this particular goal & user
+  const incompleteSubgoalProgress = await SubgoalProgress.findOne(
+    { isCompleted: false, user: userId, goal: goal._id },
+    '_id'
+  ).lean();
+
+  if (incompleteSubgoalProgress) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `You have a subgoal incomplete within this goal`
+    );
+  }
+
+  // subgoalProgress can only be created after the goal's startDate
+  if (isAfter(new Date(), goal.startDate)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Goal is not yet started');
+  }
+
+  // subgoal duration can not exceed the goal end date
+  const goalEndDate = addDays(goal.startDate, goal.duration);
+  const subgoalEndDate = addDays(new Date(), subgoal.duration);
+  if (isAfter(subgoalEndDate, goalEndDate)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Subgoal duration can not exceed the goal end date'
+    );
   }
 
   const newSubgoalProgress: ISubgoalProgress = {

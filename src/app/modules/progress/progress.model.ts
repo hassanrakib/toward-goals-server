@@ -47,6 +47,7 @@ const subgoalProgressSchema = new Schema<ISubgoalProgress>(
     },
     isRewarded: {
       type: Boolean,
+      default: false,
     },
   },
   {

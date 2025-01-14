@@ -14,10 +14,13 @@ const createHabitUnitSchema = z.object({
         .string({
           required_error: 'Unit name is required.',
         })
+        .min(2, 'Habit unit name must 2 characters long')
+        .max(8, 'Habit unit name must be at most 8 characters long')
         .trim(),
       usageCount: z
         .number()
         .min(0, 'Usage count must be at least 0')
+        .optional()
         .default(0),
     })
     .refine(
@@ -79,7 +82,11 @@ const createHabitSchema = z.object({
         message: 'Unit id is not valid',
       }),
     difficulties: createHabitDifficultiesSchema,
-    usageCount: z.number().min(0, 'Usage count must be at least 0.').default(0),
+    usageCount: z
+      .number()
+      .min(0, 'Usage count must be at least 0.')
+      .optional()
+      .default(0),
   }),
 });
 

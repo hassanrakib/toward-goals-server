@@ -31,7 +31,7 @@ const createSubgoalProgressSchema = z.object({
       })
       .optional(),
     isCompleted: z.boolean().optional().default(false),
-    isRewarded: z.boolean().optional(),
+    isRewarded: z.boolean().optional().default(false),
   }),
 });
 

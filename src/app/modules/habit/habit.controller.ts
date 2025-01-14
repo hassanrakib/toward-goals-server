@@ -6,7 +6,7 @@ import sendResponse from '../../utils/send-response';
 import httpStatus from 'http-status';
 
 const createHabitUnit = catchAsync(
-  async (req: Request<{}, {}, IHabitUnit>, res) => {
+  async (req: Request<{ goalId?: string }, {}, IHabitUnit>, res) => {
     const habitUnit = await habitServices.insertHabitUnitIntoDB(req.body);
 
     sendResponse(res, {

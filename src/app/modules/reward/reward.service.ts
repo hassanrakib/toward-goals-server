@@ -1,38 +1,44 @@
-// import httpStatus from 'http-status';
-// import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
+import AppError from '../../errors/AppError';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
-// import { Subgoal } from '../subgoal/subgoal.model';
-// import { User } from '../user/user.model';
+import { SubgoalProgress } from '../progress/progress.model';
+import { User } from '../user/user.model';
 import { IReward, RewardFromClient } from './reward.interface';
 import { Reward } from './reward.model';
 
 const insertRewardIntoDB = async (
-  // userUsername: string,
+  subgoalId: string,
+  userUsername: string,
   reward: RewardFromClient,
   rewardImageFile: Express.Multer.File | undefined
 ) => {
-  // get the user _id
-  // const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+  // get the user _id to use it in the subgoal progress query
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
-  //   make sure subgoal exists in the db with the id as it is coming from the client side
-  // const subgoal = await Subgoal.findById(subgoalReward.subgoal, '_id title');
+  // check that the user is really into this subgoal
+  // also the subgoal is not completed by this user
+  const subgoalProgress = await SubgoalProgress.findOne(
+    {
+      user: userId,
+      subgoal: subgoalId,
+    },
+    '_id isCompleted reward'
+  ).lean();
 
-  // if (!subgoal) {
-  //   throw new AppError(httpStatus.NOT_FOUND, 'Subgoal is not valid');
-  // }
+  if (!subgoalProgress) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this subgoal');
+  }
 
-  // can not add more than one reward
-  // const addedSubgoalReward = await SubgoalReward.findOne(
-  //   { subgoal: subgoal._id },
-  //   '_id'
-  // );
+  if (subgoalProgress.isCompleted) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You can not add a reward as the subgoal is already completed'
+    );
+  }
 
-  // if (addedSubgoalReward) {
-  //   throw new AppError(
-  //     httpStatus.BAD_REQUEST,
-  //     'Subgoal reward is already added'
-  //   );
-  // }
+  if (subgoalProgress.reward) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Reward is already added');
+  }
 
   // calculate points, required to redeem the reward
   // for now: 1$ price reward will need = 20 gem points

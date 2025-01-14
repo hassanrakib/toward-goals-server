@@ -1,6 +1,5 @@
 import { Request } from 'express';
 import catchAsync from '../../utils/catch-async';
-// import { ISubgoalFromClient } from './subgoal.interface';
 import { subgoalServices } from './subgoal.service';
 import sendResponse from '../../utils/send-response';
 import httpStatus from 'http-status';

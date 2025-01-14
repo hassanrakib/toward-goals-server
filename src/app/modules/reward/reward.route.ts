@@ -8,7 +8,7 @@ import fileUpload from '../../middlewares/file-upload';
 const router = express.Router();
 
 router.post(
-  '/create-subgoal-reward',
+  '/:subgoalId/create-subgoal-reward',
   auth(),
   fileUpload(),
   validateRequest(rewardValidations.createRewardSchema),

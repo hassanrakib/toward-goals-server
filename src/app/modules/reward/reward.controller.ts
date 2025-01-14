@@ -7,11 +7,13 @@ import sendResponse from '../../utils/send-response';
 import { rewardServices } from './reward.service';
 
 const createReward = catchAsync(
-  async (req: Request<{}, {}, RewardFromClient>, res) => {
+  async (req: Request<{ subgoalId?: string }, {}, RewardFromClient>, res) => {
     // get the multer uploaded file
     const rewardImageFile = getMulterUploadedFile(req);
 
     const reward = await rewardServices.insertRewardIntoDB(
+      req.params.subgoalId!,
+      req.user.username,
       req.body,
       rewardImageFile
     );

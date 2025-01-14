@@ -1,13 +1,7 @@
-// import { isMongoId } from 'validator';
 import { z } from 'zod';
 
 const createRewardSchema = z.object({
   body: z.object({
-    // subgoal: z
-    //   .string({ required_error: 'Subgoal is required' })
-    //   .refine((id) => isMongoId(id), {
-    //     message: 'Subgoal id is not valid',
-    //   }),
     name: z
       .string({ required_error: 'Reward name is required' })
       .trim()
@@ -27,7 +21,6 @@ const createRewardSchema = z.object({
       .int({ message: 'User count must be integer' })
       .min(0, { message: 'Usage count must be atleast 0' })
       .optional(),
-    // isRewarded: z.boolean().optional().default(false),
   }),
 });
 
