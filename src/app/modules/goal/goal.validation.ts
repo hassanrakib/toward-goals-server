@@ -17,15 +17,6 @@ const createGoalSchema = z.object({
       .max(5, { message: 'Admins list exceeds the maximum allowed number' })
       .optional()
       .default([]),
-
-    // users: z
-    //   .array(
-    //     z
-    //       .string({ required_error: 'Users field is required' })
-    //       .refine((id) => isMongoId(id), { message: 'Invalid user id' })
-    //   )
-    //   .nonempty({ message: 'Users list can not be empty' })
-    //   .max(200, { message: 'User list exceeds the maximum allowed number' }),
     userLimit: z
       .number({ required_error: 'User limit is required' })
       .int({ message: 'User limit can not be a decimal number' })
