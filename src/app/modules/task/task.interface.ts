@@ -18,3 +18,5 @@ export interface ITask {
   deadline: Date;
   isCompleted?: boolean;
 }
+
+export type TaskFromClient = Omit<ITask, 'user'>;

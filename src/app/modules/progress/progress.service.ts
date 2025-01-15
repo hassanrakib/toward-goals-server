@@ -104,13 +104,6 @@ const insertHabitProgressIntoDB = async (
   // get the user _id to use it in the habit progress creation
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
-  //   check if goal exists
-  const goal = await Goal.findById(habitProgress.goal, '_id').lean();
-
-  if (!goal) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
-  }
-
   //   check if habit exists
   const habit = await Habit.findById(habitProgress.habit, '_id').lean();
 
@@ -120,7 +113,7 @@ const insertHabitProgressIntoDB = async (
 
   // check if the user is really into the goal
   const progress = await Progress.findOne(
-    { goal: goal._id, user: userId },
+    { goal: habitProgress.goal, user: userId },
     '_id isCompleted'
   ).lean();
 
@@ -137,7 +130,7 @@ const insertHabitProgressIntoDB = async (
   // check if there are 3 habits already created for the goal
   const habitProgressCount = await HabitProgress.countDocuments({
     user: userId,
-    goal: goal._id,
+    goal: habitProgress.goal,
   });
 
   if (habitProgressCount === 3) {
