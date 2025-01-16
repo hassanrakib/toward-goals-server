@@ -5,6 +5,7 @@ import { SubgoalProgress } from '../progress/progress.model';
 import { User } from '../user/user.model';
 import { IReward, RewardFromClient } from './reward.interface';
 import { Reward } from './reward.model';
+import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 
 const insertRewardIntoDB = async (
   subgoalId: string,
@@ -61,7 +62,22 @@ const insertRewardIntoDB = async (
     newReward.image = rewardImageURL;
   }
 
-  return Reward.create(newReward);
+  // create reward into the db & get the result
+  const insertedReward = await Reward.create(newReward);
+
+  // insert the record into algolia index for search
+  const record = {
+    objectID: insertedReward._id.toString(),
+    name: insertedReward.name,
+    image: insertedReward.image,
+    price: insertedReward.price,
+    pointsRequired: insertedReward.pointsRequired,
+    usageCount: insertedReward.usageCount,
+  };
+
+  await addRecordToAlgoliaIndex(record, 'rewards');
+
+  return insertedReward;
 };
 
 export const rewardServices = {

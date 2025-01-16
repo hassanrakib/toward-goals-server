@@ -4,6 +4,7 @@ import { IHabit, IHabitUnit } from './habit.interface';
 import { Habit, HabitUnit } from './habit.model';
 import { HabitProgress, Progress } from '../progress/progress.model';
 import { User } from '../user/user.model';
+import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 
 const insertHabitUnitIntoDB = async (
   goalId: string,
@@ -42,7 +43,19 @@ const insertHabitUnitIntoDB = async (
     );
   }
 
-  return HabitUnit.create(habitUnit);
+  const insertedHabitUnit = await HabitUnit.create(habitUnit);
+
+  // insert the record into algolia index for search
+  const record = {
+    objectID: insertedHabitUnit._id.toString(),
+    type: insertedHabitUnit.type,
+    name: insertedHabitUnit.name,
+    usageCount: insertedHabitUnit.usageCount,
+  };
+
+  await addRecordToAlgoliaIndex(record, 'habitUnits');
+
+  return insertedHabitUnit;
 };
 
 const insertHabitIntoDB = async (
@@ -88,7 +101,19 @@ const insertHabitIntoDB = async (
       'You have already created three habits for this goal'
     );
   }
-  return Habit.create(habit);
+  const insertedHabit = await Habit.create(habit);
+
+  // insert the record into algolia index for search
+  const record = {
+    objectID: insertedHabit._id.toString(),
+    title: insertedHabit.title,
+    difficulties: insertedHabit.difficulties,
+    usageCount: insertedHabit.usageCount,
+  };
+
+  await addRecordToAlgoliaIndex(record, 'habits');
+
+  return insertedHabit;
 };
 
 export const habitServices = {

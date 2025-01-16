@@ -1,3 +1,4 @@
+import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 import { User } from '../user/user.model';
 import { IGoal, IGoalFromClient } from './goal.interface';
@@ -25,7 +26,22 @@ const insertGoalIntoDB = async (
     const goalImageURL = await saveImageToCloud(imageName, goalImageFile.path);
     newGoal.image = goalImageURL;
   }
-  return Goal.create(newGoal);
+  const insertedGoal = await Goal.create(newGoal);
+
+  // insert the record into algolia index for search
+  const record = {
+    objectID: insertedGoal._id.toString(),
+    title: insertedGoal.title,
+    image: insertedGoal.image,
+    userCount: insertedGoal.users.length,
+    userLimit: insertedGoal.userLimit,
+    startDate: insertedGoal.startDate,
+    duration: insertedGoal.duration,
+  };
+
+  await addRecordToAlgoliaIndex(record, 'goals');
+
+  return insertedGoal;
 };
 
 export const goalServices = {

@@ -6,6 +6,7 @@ import { ISubgoal } from './subgoal.interface';
 import { Subgoal } from './subgoal.model';
 import { addDays, isAfter } from 'date-fns';
 import { Progress, SubgoalProgress } from '../progress/progress.model';
+import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 
 const insertSubgoalIntoDB = async (
   goalId: string,
@@ -68,7 +69,19 @@ const insertSubgoalIntoDB = async (
     );
   }
 
-  return Subgoal.create(subgoal);
+  const insertedSubgoal = await Subgoal.create(subgoal);
+
+  // insert the record into algolia index for search
+  const record = {
+    objectID: insertedSubgoal._id.toString(),
+    title: insertedSubgoal.title,
+    duration: insertedSubgoal.duration,
+    usageCount: insertedSubgoal.usageCount,
+  };
+
+  await addRecordToAlgoliaIndex(record, 'subgoals');
+
+  return insertedSubgoal;
 };
 
 export const subgoalServices = {
