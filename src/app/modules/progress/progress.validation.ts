@@ -17,21 +17,21 @@ const createSubgoalProgressSchema = z.object({
       .refine((id) => isMongoId(id), {
         message: 'Subgoal id is not valid',
       }),
-    keyMilestones: z
-      .array(
-        z.string().min(3, 'Each milestone must be at least 3 characters long')
-      )
-      .min(2, 'There must be at least 2 milestones')
-      .max(4, 'There must be no more than 4 milestones')
-      .optional(),
-    reward: z
-      .string()
-      .refine((id) => isMongoId(id), {
-        message: 'Reward id is not valid',
-      })
-      .optional(),
-    isCompleted: z.boolean().optional().default(false),
-    isRewarded: z.boolean().optional().default(false),
+    // keyMilestones: z
+    //   .array(
+    //     z.string().min(3, 'Each milestone must be at least 3 characters long')
+    //   )
+    //   .min(2, 'There must be at least 2 milestones')
+    //   .max(4, 'There must be no more than 4 milestones')
+    //   .optional(),
+    // reward: z
+    //   .string()
+    //   .refine((id) => isMongoId(id), {
+    //     message: 'Reward id is not valid',
+    //   })
+    //   .optional(),
+    // isCompleted: z.boolean().optional().default(false),
+    // isRewarded: z.boolean().optional().default(false),
   }),
 });
 

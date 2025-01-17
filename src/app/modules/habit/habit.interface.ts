@@ -18,6 +18,8 @@ export interface IHabitUnit {
   usageCount?: number;
 }
 
+export type HabitUnitCreationData = Pick<IHabitUnit, 'type' | 'name'>;
+
 export interface IHabitDifficulties {
   mini: number;
   plus: number;
@@ -30,3 +32,5 @@ export interface IHabit {
   usageCount?: number;
   difficulties: IHabitDifficulties;
 }
+
+export type HabitCreationData = Omit<IHabit, 'usageCount'>;

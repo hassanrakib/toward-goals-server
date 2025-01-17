@@ -1,4 +1,4 @@
-import { isMongoId } from 'validator';
+// import { isMongoId } from 'validator';
 import { z } from 'zod';
 
 const createGoalSchema = z.object({
@@ -8,15 +8,15 @@ const createGoalSchema = z.object({
       .min(5, { message: 'Title must be at least 5 characters long' })
       .max(50, { message: 'Title cannot exceed 50 characters' })
       .trim(),
-    admins: z
-      .array(
-        z.string().refine((id) => isMongoId(id), {
-          message: 'Invalid admin id',
-        })
-      )
-      .max(5, { message: 'Admins list exceeds the maximum allowed number' })
-      .optional()
-      .default([]),
+    // admins: z
+    //   .array(
+    //     z.string().refine((id) => isMongoId(id), {
+    //       message: 'Invalid admin id',
+    //     })
+    //   )
+    //   .max(5, { message: 'Admins list exceeds the maximum allowed number' })
+    //   .optional()
+    //   .default([]),
     userLimit: z
       .number({ required_error: 'User limit is required' })
       .int({ message: 'User limit can not be a decimal number' })

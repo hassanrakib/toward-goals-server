@@ -1,6 +1,6 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
-import { IHabit, IHabitUnit } from './habit.interface';
+import { HabitUnitCreationData, HabitCreationData } from './habit.interface';
 import { Habit, HabitUnit } from './habit.model';
 import { HabitProgress, Progress } from '../progress/progress.model';
 import { User } from '../user/user.model';
@@ -9,7 +9,7 @@ import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 const insertHabitUnitIntoDB = async (
   goalId: string,
   userUsername: string,
-  habitUnit: IHabitUnit
+  habitUnit: HabitUnitCreationData
 ) => {
   // get the user _id to use it in the goal progress query
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
@@ -61,10 +61,10 @@ const insertHabitUnitIntoDB = async (
 const insertHabitIntoDB = async (
   goalId: string,
   userUsername: string,
-  habit: IHabit
+  habit: HabitCreationData
 ) => {
   // check habit unit existence in the db
-  const habitUnit = await HabitUnit.findById(habit.unit, '_id');
+  const habitUnit = await HabitUnit.findById(habit.unit, '_id').lean();
 
   if (!habitUnit) {
     throw new AppError(httpStatus.NOT_FOUND, 'Habit unit id is not valid.');

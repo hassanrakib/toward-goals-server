@@ -5,12 +5,12 @@ import { Request } from 'express';
 import {
   HabitProgressFromClient,
   ProgressCreationData,
-  SubgoalProgressFromClient,
+  SubgoalProgressCreationData,
 } from './progress.interface';
 import { progressServices } from './progress.service';
 
 const createSubgoalProgress = catchAsync(
-  async (req: Request<{}, {}, SubgoalProgressFromClient>, res) => {
+  async (req: Request<{}, {}, SubgoalProgressCreationData>, res) => {
     const subgoalProgress = await progressServices.insertSubgoalProgressIntoDB(
       req.user.username,
       req.body

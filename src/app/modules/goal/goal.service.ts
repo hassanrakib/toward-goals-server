@@ -1,12 +1,12 @@
 import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 import { User } from '../user/user.model';
-import { IGoal, IGoalFromClient } from './goal.interface';
+import { IGoal, GoalCreationData } from './goal.interface';
 import { Goal } from './goal.model';
 
 const insertGoalIntoDB = async (
   creatorUsername: string,
-  goal: IGoalFromClient,
+  goal: GoalCreationData,
   goalImageFile: Express.Multer.File | undefined
 ) => {
   // get the creator

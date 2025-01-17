@@ -8,17 +8,17 @@ import {
   IProgress,
   ISubgoalProgress,
   ProgressCreationData,
-  SubgoalProgressFromClient,
+  SubgoalProgressCreationData,
 } from './progress.interface';
 import { HabitProgress, Progress, SubgoalProgress } from './progress.model';
 import { Goal } from '../goal/goal.model';
 import { Habit } from '../habit/habit.model';
 import { Level } from '../level/level.model';
-import { addDays, isAfter } from 'date-fns';
+import { addDays, isAfter, isBefore } from 'date-fns';
 
 const insertSubgoalProgressIntoDB = async (
   userUsername: string,
-  subgoalProgress: SubgoalProgressFromClient
+  subgoalProgress: SubgoalProgressCreationData
 ) => {
   // get the user _id to use it in the subgoal progress creation
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
@@ -75,7 +75,7 @@ const insertSubgoalProgressIntoDB = async (
   }
 
   // subgoalProgress can only be created after the goal's startDate
-  if (isAfter(new Date(), goal.startDate)) {
+  if (isBefore(new Date(), goal.startDate)) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Goal is not yet started');
   }
 

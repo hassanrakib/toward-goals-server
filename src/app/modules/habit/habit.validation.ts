@@ -17,11 +17,11 @@ const createHabitUnitSchema = z.object({
         .min(2, 'Habit unit name must 2 characters long')
         .max(8, 'Habit unit name must be at most 8 characters long')
         .trim(),
-      usageCount: z
-        .number()
-        .min(0, 'Usage count must be at least 0')
-        .optional()
-        .default(0),
+      // usageCount: z
+      //   .number()
+      //   .min(0, 'Usage count must be at least 0')
+      //   .optional()
+      //   .default(0),
     })
     .refine(
       (data) => {
@@ -33,7 +33,7 @@ const createHabitUnitSchema = z.object({
         return true;
       },
       {
-        message: `Unit name must be ${HabitUnitNameForTime.Minute} or ${HabitUnitNameForTime.Minute} if the unit type is Time`,
+        message: `Unit name must be ${HabitUnitNameForTime.Minute} or ${HabitUnitNameForTime.Hour} if the unit type is Time`,
         path: ['name'],
       }
     ),
@@ -57,7 +57,7 @@ const createHabitDifficultiesSchema = z
       })
       .min(3, 'Elite difficulty must be at least 3.'),
   })
-  .refine((data) => data.plus > data.elite, {
+  .refine((data) => data.plus > data.mini, {
     message: 'Plus difficulty must be greater than mini difficulty',
     path: ['plus'],
   })
@@ -82,11 +82,11 @@ const createHabitSchema = z.object({
         message: 'Unit id is not valid',
       }),
     difficulties: createHabitDifficultiesSchema,
-    usageCount: z
-      .number()
-      .min(0, 'Usage count must be at least 0.')
-      .optional()
-      .default(0),
+    // usageCount: z
+    //   .number()
+    //   .min(0, 'Usage count must be at least 0.')
+    //   .optional()
+    //   .default(0),
   }),
 });
 

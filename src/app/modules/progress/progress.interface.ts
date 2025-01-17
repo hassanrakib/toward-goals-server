@@ -10,7 +10,10 @@ export interface ISubgoalProgress {
   isRewarded?: boolean;
 }
 
-export type SubgoalProgressFromClient = Omit<ISubgoalProgress, 'user'>;
+export type SubgoalProgressCreationData = Pick<
+  ISubgoalProgress,
+  'goal' | 'subgoal'
+>;
 
 export interface IHabitProgress {
   user: Types.ObjectId;

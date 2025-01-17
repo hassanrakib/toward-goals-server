@@ -36,7 +36,6 @@ const goalSchema = new Schema<IGoal>(
       type: [Schema.Types.ObjectId],
       required: [true, 'Users field is required'],
       ref: 'User',
-      default: [],
       validate: {
         validator: (users: Schema.Types.ObjectId[]) => users.length <= 200,
         message: 'User list exceeds the maximum allowed number.',

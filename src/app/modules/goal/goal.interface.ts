@@ -11,4 +11,7 @@ export interface IGoal {
   duration: number;
 }
 
-export type IGoalFromClient = Omit<IGoal, 'creator' | 'users'>;
+export type GoalCreationData = Pick<
+  IGoal,
+  'title' | 'userLimit' | 'startDate' | 'duration'
+>;
