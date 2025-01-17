@@ -12,11 +12,11 @@ const createSubgoalSchema = z.object({
       .int({ message: 'Duration must be in days' })
       .gte(1, { message: 'Duration must be at least 1 day' })
       .lte(365, { message: 'Duration cannot exceed 1 year' }),
-    usageCount: z
-      .number()
-      .int({ message: 'User count must be integer' })
-      .min(0, { message: 'Usage count must be atleast 0' })
-      .optional(),
+    // usageCount: z
+    //   .number()
+    //   .int({ message: 'User count must be integer' })
+    //   .min(0, { message: 'Usage count must be atleast 0' })
+    //   .optional(),
   }),
 });
 

@@ -93,7 +93,8 @@ const insertTaskIntoDB = async (
       const imageName = `${task.title.split(' ').join('-').toLowerCase()}-by-${userUsername}-${uniqueSuffix}`;
       const taskImageURL = await saveImageToCloud(
         imageName,
-        taskImageFile.path
+        taskImageFile.path,
+        `toward-goals/tasks/${userUsername}`
       );
 
       newTask.images.push(taskImageURL);

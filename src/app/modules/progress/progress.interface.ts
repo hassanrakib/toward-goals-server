@@ -43,4 +43,4 @@ export interface IProgress {
   isCompleted?: boolean;
 }
 
-export type ProgressFromClient = Omit<IProgress, 'user'>;
+export type ProgressCreationData = Pick<IProgress, 'goal'>;

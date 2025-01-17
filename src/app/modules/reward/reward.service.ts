@@ -57,7 +57,8 @@ const insertRewardIntoDB = async (
     const rewardImageName = `${reward.name.split(' ').join('-').toLowerCase()}-${uniqueSuffix}`;
     const rewardImageURL = await saveImageToCloud(
       rewardImageName,
-      rewardImageFile.path
+      rewardImageFile.path,
+      'toward-goals/rewards'
     );
     newReward.image = rewardImageURL;
   }

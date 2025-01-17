@@ -4,7 +4,7 @@ import { Goal } from '../goal/goal.model';
 import { User } from '../user/user.model';
 import { ISubgoal } from './subgoal.interface';
 import { Subgoal } from './subgoal.model';
-import { addDays, isAfter } from 'date-fns';
+import { addDays, isAfter, isBefore } from 'date-fns';
 import { Progress, SubgoalProgress } from '../progress/progress.model';
 import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 
@@ -55,7 +55,7 @@ const insertSubgoalIntoDB = async (
   }
 
   // subgoal can only be created after the goal's startDate
-  if (isAfter(new Date(), goal.startDate)) {
+  if (isBefore(new Date(), goal.startDate)) {
     throw new AppError(httpStatus.BAD_REQUEST, 'Goal is not yet started');
   }
 

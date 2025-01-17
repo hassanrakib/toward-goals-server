@@ -29,7 +29,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
           message: 'Username can not contain special characters',
         },
       ],
-      unique: true,
+      unique: [true, 'Username already exists'],
     },
     image: {
       type: String,

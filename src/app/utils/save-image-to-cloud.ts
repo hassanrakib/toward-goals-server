@@ -11,9 +11,16 @@ cloudinary.config({
   //   secure_distribution: 'mydomain.com',
 });
 
-const saveImageToCloud = async (imageName: string, filePath: string) => {
+const saveImageToCloud = async (
+  imageName: string,
+  filePath: string,
+  folder: string
+) => {
   try {
     const { secure_url } = await cloudinary.uploader.upload(filePath, {
+      // folder in cloudinary
+      folder,
+      // image name in cloudinary
       public_id: imageName,
     });
     return secure_url;

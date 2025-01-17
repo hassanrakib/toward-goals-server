@@ -4,7 +4,7 @@ import sendResponse from '../../utils/send-response';
 import { Request } from 'express';
 import {
   HabitProgressFromClient,
-  ProgressFromClient,
+  ProgressCreationData,
   SubgoalProgressFromClient,
 } from './progress.interface';
 import { progressServices } from './progress.service';
@@ -42,7 +42,7 @@ const createHabitProgress = catchAsync(
 );
 
 const createProgress = catchAsync(
-  async (req: Request<{}, {}, ProgressFromClient>, res) => {
+  async (req: Request<{}, {}, ProgressCreationData>, res) => {
     const progress = await progressServices.insertProgressIntoDB(
       req.user.username,
       req.body

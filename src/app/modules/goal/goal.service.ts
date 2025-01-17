@@ -23,7 +23,11 @@ const insertGoalIntoDB = async (
   if (goalImageFile) {
     const uniqueSuffix = `${String(Date.now())}-${String(Math.round(Math.random() * 1e9))}`;
     const imageName = `${goal.title.split(' ').join('-').toLowerCase()}-by-${creatorUsername}-${uniqueSuffix}`;
-    const goalImageURL = await saveImageToCloud(imageName, goalImageFile.path);
+    const goalImageURL = await saveImageToCloud(
+      imageName,
+      goalImageFile.path,
+      'toward-goals/goals'
+    );
     newGoal.image = goalImageURL;
   }
   const insertedGoal = await Goal.create(newGoal);

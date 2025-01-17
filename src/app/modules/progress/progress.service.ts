@@ -7,13 +7,13 @@ import {
   IHabitProgress,
   IProgress,
   ISubgoalProgress,
-  ProgressFromClient,
+  ProgressCreationData,
   SubgoalProgressFromClient,
 } from './progress.interface';
 import { HabitProgress, Progress, SubgoalProgress } from './progress.model';
 import { Goal } from '../goal/goal.model';
 import { Habit } from '../habit/habit.model';
-import { Level, RequirementLevel } from '../level/level.model';
+import { Level } from '../level/level.model';
 import { addDays, isAfter } from 'date-fns';
 
 const insertSubgoalProgressIntoDB = async (
@@ -150,39 +150,42 @@ const insertHabitProgressIntoDB = async (
 
 const insertProgressIntoDB = async (
   userUsername: string,
-  progress: ProgressFromClient
+  progress: ProgressCreationData
 ) => {
   // get the user _id to use it in the progress creation
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
   //   check if goal exists
-  const goal = await Goal.findById(progress.goal, '_id').lean();
+  const goal = await Goal.findById(progress.goal).lean();
 
   if (!goal) {
     throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
   }
 
-  //   check if level exists
-  const level = await Level.findById(progress.level, '_id').lean();
+  //   get the main level
+  const mainLevel = await Level.findOne(
+    { level: 0 },
+    '_id requirements'
+  ).lean();
 
-  if (!level) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Level is not valid');
+  if (!mainLevel) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Level not found');
   }
 
   //   check if requirement level exists in the db
-  for (const key of Object.keys(progress.analytics)) {
-    const requirementLevel = await RequirementLevel.findById(
-      progress.analytics[key as keyof typeof progress.analytics].level,
-      '_id'
-    ).lean();
+  // for (const key of Object.keys(progress.analytics)) {
+  //   const requirementLevel = await RequirementLevel.findById(
+  //     progress.analytics[key as keyof typeof progress.analytics].level,
+  //     '_id'
+  //   ).lean();
 
-    if (!requirementLevel) {
-      throw new AppError(
-        httpStatus.NOT_FOUND,
-        `Requirement level in ${key} is not valid`
-      );
-    }
-  }
+  //   if (!requirementLevel) {
+  //     throw new AppError(
+  //       httpStatus.NOT_FOUND,
+  //       `Requirement level in ${key} is not valid`
+  //     );
+  //   }
+  // }
 
   // check if the user is already into the goal
   const existingProgress = await Progress.findOne(
@@ -196,6 +199,12 @@ const insertProgressIntoDB = async (
 
   const newProgress: IProgress = {
     ...progress,
+    level: mainLevel._id,
+    analytics: {
+      consistency: { level: mainLevel.requirements.consistency },
+      commitment: { level: mainLevel.requirements.commitment },
+      deepFocus: { level: mainLevel.requirements.deepFocus },
+    },
     user: userId,
   };
 
