@@ -3,7 +3,7 @@ import catchAsync from '../../utils/catch-async';
 import sendResponse from '../../utils/send-response';
 import { Request } from 'express';
 import {
-  HabitProgressFromClient,
+  HabitProgressCreationData,
   ProgressCreationData,
   SubgoalProgressCreationData,
 } from './progress.interface';
@@ -26,7 +26,7 @@ const createSubgoalProgress = catchAsync(
 );
 
 const createHabitProgress = catchAsync(
-  async (req: Request<{}, {}, HabitProgressFromClient>, res) => {
+  async (req: Request<{}, {}, HabitProgressCreationData>, res) => {
     const habitProgress = await progressServices.insertHabitProgressIntoDB(
       req.user.username,
       req.body

@@ -7,4 +7,4 @@ export interface IReward {
   pointsRequired: number;
 }
 
-export type RewardFromClient = Omit<IReward, 'pointsRequired'>;
+export type RewardCreationData = Pick<IReward, 'name' | 'price' | 'link'>;

@@ -25,7 +25,7 @@ export interface IHabitProgress {
   eliteCompletion?: number;
 }
 
-export type HabitProgressFromClient = Omit<IHabitProgress, 'user'>;
+export type HabitProgressCreationData = Pick<IHabitProgress, 'goal' | 'habit'>;
 
 export interface IProgress {
   user: Types.ObjectId;

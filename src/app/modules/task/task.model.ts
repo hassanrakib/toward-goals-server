@@ -16,6 +16,20 @@ const timeSpanSchema = new Schema<ITimeSpan>({
   endTime: {
     type: Date,
     required: [true, 'End time is required'],
+    validate: [
+      {
+        validator: function (endTime: Date) {
+          return isAfter(endTime, this.startTime);
+        },
+        message: 'End time must be after the start time',
+      },
+      {
+        validator: function (endTime: Date) {
+          return isBefore(endTime, new Date());
+        },
+        message: 'End time can not be in future',
+      },
+    ],
   },
 });
 

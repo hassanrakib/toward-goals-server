@@ -16,11 +16,11 @@ const createRewardSchema = z.object({
         required_error: 'Reward link is required',
       })
       .url('Reward link must be a valid URL'),
-    usageCount: z
-      .number()
-      .int({ message: 'User count must be integer' })
-      .min(0, { message: 'Usage count must be atleast 0' })
-      .optional(),
+    // usageCount: z
+    //   .number()
+    //   .int({ message: 'User count must be integer' })
+    //   .min(0, { message: 'Usage count must be atleast 0' })
+    //   .optional(),
   }),
 });
 

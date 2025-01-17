@@ -3,7 +3,7 @@ import AppError from '../../errors/AppError';
 import { Subgoal } from '../subgoal/subgoal.model';
 import { User } from '../user/user.model';
 import {
-  HabitProgressFromClient,
+  HabitProgressCreationData,
   IHabitProgress,
   IProgress,
   ISubgoalProgress,
@@ -99,7 +99,7 @@ const insertSubgoalProgressIntoDB = async (
 
 const insertHabitProgressIntoDB = async (
   userUsername: string,
-  habitProgress: HabitProgressFromClient
+  habitProgress: HabitProgressCreationData
 ) => {
   // get the user _id to use it in the habit progress creation
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
@@ -108,7 +108,7 @@ const insertHabitProgressIntoDB = async (
   const habit = await Habit.findById(habitProgress.habit, '_id').lean();
 
   if (!habit) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Subgoal is not valid');
+    throw new AppError(httpStatus.NOT_FOUND, 'Habit is not valid');
   }
 
   // check if the user is really into the goal

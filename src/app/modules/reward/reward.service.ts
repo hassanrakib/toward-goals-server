@@ -3,14 +3,14 @@ import AppError from '../../errors/AppError';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 import { SubgoalProgress } from '../progress/progress.model';
 import { User } from '../user/user.model';
-import { IReward, RewardFromClient } from './reward.interface';
+import { IReward, RewardCreationData } from './reward.interface';
 import { Reward } from './reward.model';
 import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 
 const insertRewardIntoDB = async (
   subgoalId: string,
   userUsername: string,
-  reward: RewardFromClient,
+  reward: RewardCreationData,
   rewardImageFile: Express.Multer.File | undefined
 ) => {
   // get the user _id to use it in the subgoal progress query

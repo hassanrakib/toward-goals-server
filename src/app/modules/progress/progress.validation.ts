@@ -51,30 +51,30 @@ const createHabitProgressSchema = z.object({
       .refine((id) => isMongoId(id), {
         message: 'Habit id is not valid',
       }),
-    totalUnitCompleted: z
-      .number()
-      .int('Total completed unit must be an integer')
-      .min(0, 'Total completed unit must be a non-negative number')
-      .optional()
-      .default(0),
-    miniCompletion: z
-      .number()
-      .int('Mini completion must be an integer')
-      .min(0, 'Mini completion must be a non-negative number')
-      .optional()
-      .default(0),
-    plusCompletion: z
-      .number()
-      .int('Plus completion must be an integer')
-      .min(0, 'Plus completion must be a non-negative number')
-      .optional()
-      .default(0),
-    eliteCompletion: z
-      .number()
-      .int('Elite completion must be an integer')
-      .min(0, 'Elite completion must be a non-negative number')
-      .optional()
-      .default(0),
+    // totalUnitCompleted: z
+    //   .number()
+    //   .int('Total completed unit must be an integer')
+    //   .min(0, 'Total completed unit must be a non-negative number')
+    //   .optional()
+    //   .default(0),
+    // miniCompletion: z
+    //   .number()
+    //   .int('Mini completion must be an integer')
+    //   .min(0, 'Mini completion must be a non-negative number')
+    //   .optional()
+    //   .default(0),
+    // plusCompletion: z
+    //   .number()
+    //   .int('Plus completion must be an integer')
+    //   .min(0, 'Plus completion must be a non-negative number')
+    //   .optional()
+    //   .default(0),
+    // eliteCompletion: z
+    //   .number()
+    //   .int('Elite completion must be an integer')
+    //   .min(0, 'Elite completion must be a non-negative number')
+    //   .optional()
+    //   .default(0),
   }),
 });
 

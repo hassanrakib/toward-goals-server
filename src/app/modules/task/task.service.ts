@@ -1,6 +1,6 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
-import { ITask, ITimeSpan, TaskFromClient } from './task.interface';
+import { ITask, ITimeSpan, TaskCreationData } from './task.interface';
 import { Task, TimeSpan } from './task.model';
 import { User } from '../user/user.model';
 import {
@@ -9,10 +9,22 @@ import {
   SubgoalProgress,
 } from '../progress/progress.model';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
+import { isBefore } from 'date-fns';
 
-const insertTimeSpanIntoDB = async (timeSpan: ITimeSpan) => {
+const insertTimeSpanIntoDB = async (
+  userUsername: string,
+  timeSpan: ITimeSpan
+) => {
+  // get the user _id to use it in the task finding
+  // to make sure task belongs the this person
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
   // check if provided taskId really exist in the db
-  const task = await Task.findById(timeSpan.task, '_id isCompleted').lean();
+  // and make sure this task belongs the this person
+  const task = await Task.findOne(
+    { _id: timeSpan.task, user: userId },
+    '_id isCompleted createdAt'
+  ).lean();
 
   if (!task) {
     throw new AppError(httpStatus.NOT_FOUND, 'Task is not valid');
@@ -22,12 +34,20 @@ const insertTimeSpanIntoDB = async (timeSpan: ITimeSpan) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'Task is already completed');
   }
 
+  // make sure that the timespan's startTime is after the task creation time
+  if (isBefore(new Date(timeSpan.startTime), new Date(task.createdAt!))) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Timespan start time can not be before the task creation time'
+    );
+  }
+
   return TimeSpan.create(timeSpan);
 };
 
 const insertTaskIntoDB = async (
   userUsername: string,
-  task: TaskFromClient,
+  task: TaskCreationData,
   taskImageFiles: Express.Multer.File[] | undefined
 ) => {
   // get the user _id to use it in the task creation
@@ -51,6 +71,7 @@ const insertTaskIntoDB = async (
     );
   }
 
+  // subgoal progress is allowed to create after the goal's startDate
   // don't allow creating task when subgoal progress for the subgoal is not found
   // also, don't allow if the subgoal progress tells that the user already completed the subgoal
   const subgoalProgress = await SubgoalProgress.findOne(
@@ -73,10 +94,28 @@ const insertTaskIntoDB = async (
   }
 
   // don't allow creating task when habit progress for the habit is not found
-  const habitProgress = await HabitProgress.findById(task.habit, '_id').lean();
+  const habitProgress = await HabitProgress.findOne(
+    { habit: task.habit, user: userId },
+    '_id'
+  ).lean();
 
   if (!habitProgress) {
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not into the habit');
+  }
+
+  // make sure all other tasks for this goal, subgoal & habit are complete
+  const incompleteTask = await Task.findOne(
+    {
+      goal: task.goal,
+      subgoal: task.subgoal,
+      habit: task.habit,
+      isCompleted: false,
+    },
+    '_id'
+  ).lean();
+
+  if (incompleteTask) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You have a task incomplete');
   }
 
   const newTask: ITask = {

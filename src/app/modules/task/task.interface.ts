@@ -17,6 +17,11 @@ export interface ITask {
   images?: string[];
   deadline: Date;
   isCompleted?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export type TaskFromClient = Omit<ITask, 'user'>;
+export type TaskCreationData = Pick<
+  ITask,
+  'goal' | 'subgoal' | 'habit' | 'title' | 'deadline'
+>;
