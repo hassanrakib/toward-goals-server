@@ -63,6 +63,19 @@ const insertRewardIntoDB = async (
     newReward.image = rewardImageURL;
   }
 
+  // to avoid duplicate entry both in db and algolia
+  // check for duplicate reward
+  // if found return it from the service
+  // Using collation for exact match of the string values but case insensitive way
+  const duplicateReward = await Reward.findOne({
+    name: reward.name,
+    price: reward.price,
+  }).collation({ locale: 'en', strength: 2 });
+
+  if (duplicateReward) {
+    return duplicateReward;
+  }
+
   // create reward into the db & get the result
   const insertedReward = await Reward.create(newReward);
 

@@ -69,6 +69,19 @@ const insertSubgoalIntoDB = async (
     );
   }
 
+  // to avoid duplicate entry both in db and algolia
+  // check for duplicate subgoal
+  // if found return it from the service
+  // Using collation for a exact match of the string values but case insensitive way
+  const duplicateSubgoal = await Subgoal.findOne({
+    title: subgoal.title,
+    duration: subgoal.duration,
+  }).collation({ locale: 'en', strength: 2 });
+
+  if (duplicateSubgoal) {
+    return duplicateSubgoal;
+  }
+
   const insertedSubgoal = await Subgoal.create(subgoal);
 
   // insert the record into algolia index for search

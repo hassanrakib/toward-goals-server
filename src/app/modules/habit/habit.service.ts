@@ -43,6 +43,19 @@ const insertHabitUnitIntoDB = async (
     );
   }
 
+  // to avoid duplicate entry both in db and algolia
+  // check for duplicate habit unit
+  // if found return it from the service
+  // Using collation for exact match of the string values but case insensitive way
+  const duplicateHabitUnit = await HabitUnit.findOne({
+    type: habitUnit.type,
+    name: habitUnit.name,
+  }).collation({ locale: 'en', strength: 2 });
+
+  if (duplicateHabitUnit) {
+    return duplicateHabitUnit;
+  }
+
   const insertedHabitUnit = await HabitUnit.create(habitUnit);
 
   // insert the record into algolia index for search
@@ -101,6 +114,21 @@ const insertHabitIntoDB = async (
       'You have already created three habits for this goal'
     );
   }
+
+  // to avoid duplicate entry both in db and algolia
+  // check for duplicate habit
+  // if found return it from the service
+  // Using collation for exact match of the string values but case insensitive way
+  const duplicateHabit = await Habit.findOne({
+    title: habit.title,
+    unit: habit.unit,
+    difficulties: habit.difficulties,
+  }).collation({ locale: 'en', strength: 2 });
+
+  if (duplicateHabit) {
+    return duplicateHabit;
+  }
+
   const insertedHabit = await Habit.create(habit);
 
   // insert the record into algolia index for search
