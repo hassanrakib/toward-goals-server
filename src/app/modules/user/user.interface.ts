@@ -22,5 +22,3 @@ export interface UserModel extends Model<IUser, {}, IUserMethods> {
     selectPassword?: boolean
   ): Promise<HydratedDocument<IUser, IUserMethods>> | null;
 }
-
-export type SanitizedUser = Omit<IUser, 'password'> & { _id: string };

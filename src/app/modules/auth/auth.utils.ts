@@ -6,7 +6,7 @@ import { CustomJwtPayload } from '../../interface';
 export const createToken = (
   payload: { username: string },
   secretKey: string,
-  expiresIn: string
+  expiresIn: number
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     jwt.sign(payload, secretKey, { expiresIn }, function (err, token) {

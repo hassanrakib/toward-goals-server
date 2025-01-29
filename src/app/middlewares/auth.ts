@@ -19,7 +19,7 @@ const auth = () => {
     }
 
     // Step 2: Verify token's validity and get the decoded user
-    const decodedUser = await verifyToken(token, config.jwt_access_secret!);
+    const decodedUser = await verifyToken(token, config.session_token_secret!);
 
     // Step 3: Make sure user's existence in the db
     const userInDb = await User.getUserFromDB(

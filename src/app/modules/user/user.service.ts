@@ -1,20 +1,11 @@
-import { IUser, SanitizedUser } from './user.interface';
+import { IUser } from './user.interface';
 import { User } from './user.model';
 
 const insertUserIntoDB = async (user: IUser) => {
   // save user to db and return the result
   const userDoc = await User.create(user);
 
-  //   omit password field
-  const sanitizedUser: SanitizedUser = {
-    _id: userDoc._id.toString(),
-    username: userDoc.username,
-    email: userDoc.email,
-    image: userDoc.image,
-    isDeleted: userDoc.isDeleted,
-  };
-
-  return sanitizedUser;
+  return { username: userDoc.username };
 };
 
 export const userServices = {
