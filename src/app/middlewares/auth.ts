@@ -1,25 +1,24 @@
 import httpStatus from 'http-status';
 import AppError from '../errors/AppError';
 import catchAsync from '../utils/catch-async';
-import { verifyToken } from '../modules/auth/auth.utils';
-import config from '../config';
+import { decrypt } from '../modules/auth/auth.utils';
 import { User } from '../modules/user/user.model';
 
 // authorization middleware
 const auth = () => {
   return catchAsync(async (req, res, next) => {
-    // Step 1: Get token and check token existence
-    const token = req.headers.authorization?.split(' ')[1];
+    // Step 1: Get session and check session existence
+    const { session } = req.cookies as Record<string, string>;
 
-    if (!token) {
+    if (!session) {
       throw new AppError(
         httpStatus.UNAUTHORIZED,
         'You must login to access the resource'
       );
     }
 
-    // Step 2: Verify token's validity and get the decoded user
-    const decodedUser = await verifyToken(token, config.session_token_secret!);
+    // Step 2: Try to decrypt the session and get the decoded user
+    const decodedUser = await decrypt(session);
 
     // Step 3: Make sure user's existence in the db
     const userInDb = await User.getUserFromDB(

@@ -1,8 +1,7 @@
 import { JwtPayload } from 'jsonwebtoken';
+import { SessionPayload } from '../modules/auth/auth.interface';
 
-export interface CustomJwtPayload extends JwtPayload {
-  username: string;
-}
+export type CustomJwtPayload = SessionPayload & JwtPayload;
 
 // add 'user' property to the express Request interface
 declare global {
