@@ -3,11 +3,11 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { CustomJwtPayload } from '../../interface';
 import config from '../../config';
-import { SessionPayload } from './auth.interface';
+import { ISessionPayload } from './auth.interface';
 import { Response } from 'express';
 
 const encrypt = (
-  payload: SessionPayload,
+  payload: ISessionPayload,
   expiresIn: number
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -50,7 +50,7 @@ export const decrypt = (
   });
 };
 
-export const createSession = async (payload: SessionPayload, res: Response) => {
+export const createSession = async (payload: ISessionPayload, res: Response) => {
   const expiresIn = Number(config.session_expires_in!);
 
   const session = await encrypt(payload, expiresIn);
@@ -61,7 +61,7 @@ export const createSession = async (payload: SessionPayload, res: Response) => {
     httpOnly: true,
     // cookie's maxAge must be 5 minute (300000ms) less
     // than session's expiration time
-    // as we dont want to keep expired session in the cookie
+    // as we don't want to keep expired session in the cookie
     // session expiration time is in seconds
     // but maxAge needs to be in milliseconds
     maxAge: expiresIn * 1000 - 300000,

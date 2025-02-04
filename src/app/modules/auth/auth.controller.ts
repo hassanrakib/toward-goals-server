@@ -5,6 +5,7 @@ import { ILoginCredentials } from './auth.interface';
 import sendResponse from '../../utils/send-response';
 import httpStatus from 'http-status';
 import { createSession } from './auth.utils';
+import AppError from '../../errors/AppError';
 
 const logIn = catchAsync(
   async (req: Request<{}, {}, ILoginCredentials>, res) => {
@@ -22,6 +23,46 @@ const logIn = catchAsync(
   }
 );
 
+const checkUsername = catchAsync(
+  async (req: Request<{}, {}, {}, { username?: string }>, res) => {
+    const { username } = req.query;
+
+    if (!username) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Username is required');
+    }
+
+    const data = await authServices.knowUsernameExistence(username);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Username check',
+      data,
+    });
+  }
+);
+
+const checkEmail = catchAsync(
+  async (req: Request<{}, {}, {}, { email?: string }>, res) => {
+    const { email } = req.query;
+
+    if (!email) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Email is required');
+    }
+
+    const data = await authServices.knowEmailExistence(email);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Email check',
+      data,
+    });
+  }
+);
+
 export const authControllers = {
   logIn,
+  checkUsername,
+  checkEmail,
 };

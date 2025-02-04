@@ -28,7 +28,6 @@ const createUserSchema = z.object({
       .refine((password: string) => isStrongPassword(password), {
         message: 'Password must be strong',
       }),
-    isDeleted: z.boolean().optional().default(false),
   }),
 });
 

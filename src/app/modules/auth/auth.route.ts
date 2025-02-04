@@ -11,4 +11,7 @@ router.post(
   authControllers.logIn
 );
 
+router.get('/check-username', authControllers.checkUsername);
+router.get('/check-email', authControllers.checkEmail);
+
 export const authRoutes = router;

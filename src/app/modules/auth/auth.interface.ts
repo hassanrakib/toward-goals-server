@@ -3,6 +3,6 @@ export interface ILoginCredentials {
   password: string;
 }
 
-export interface SessionPayload {
+export interface ISessionPayload {
   username: string;
 }
