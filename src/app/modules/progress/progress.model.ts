@@ -259,6 +259,7 @@ const progressSchema = new Schema<IProgress>(
         },
       },
     },
+    isCompleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,

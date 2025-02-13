@@ -27,4 +27,6 @@ router.post(
   progressControllers.createProgress
 );
 
+router.get('/goals-progress', auth(), progressControllers.getGoalsProgress);
+
 export const progressRoutes = router;

@@ -1,6 +1,6 @@
 import { FilterQuery, Query } from 'mongoose';
 
-interface QueryParams {
+export interface QueryParams {
   searchTerm?: string;
   sort?: string;
   limit?: string;
@@ -20,7 +20,9 @@ export default class QueryBuilder<T> {
   }
 
   protected getExcludedFields(): string[] {
-    return ['searchTerm', 'sort', 'limit', 'page', 'fields'];
+    // exclude 'user' for safety purpose
+    // user based filtering will be done in the services
+    return ['searchTerm', 'sort', 'limit', 'page', 'fields', 'user'];
   }
 
   private parseCommaSeparatedFields(

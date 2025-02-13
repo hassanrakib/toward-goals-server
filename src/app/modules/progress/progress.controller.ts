@@ -57,8 +57,25 @@ const createProgress = catchAsync(
   }
 );
 
+const getGoalsProgress = catchAsync(async (req, res) => {
+  const { goalsProgress, meta } =
+    await progressServices.fetchGoalsProgressFromDB(
+      req.user.username,
+      req.query
+    );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Goals progress are retrieved successfully',
+    data: goalsProgress,
+    meta,
+  });
+});
+
 export const progressControllers = {
   createSubgoalProgress,
   createHabitProgress,
   createProgress,
+  getGoalsProgress,
 };

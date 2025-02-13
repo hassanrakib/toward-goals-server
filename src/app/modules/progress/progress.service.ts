@@ -15,6 +15,7 @@ import { Goal } from '../goal/goal.model';
 import { Habit } from '../habit/habit.model';
 import { Level } from '../level/level.model';
 import { addDays, isAfter, isBefore } from 'date-fns';
+import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
 
 const insertSubgoalProgressIntoDB = async (
   userUsername: string,
@@ -211,8 +212,34 @@ const insertProgressIntoDB = async (
   return Progress.create(newProgress);
 };
 
+const fetchGoalsProgressFromDB = async (
+  userUsername: string,
+  query: QueryParams
+) => {
+  // get the user _id to use it in the query
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
+  const goalsProgressQuery = new QueryBuilder(
+    Progress.find({ user: userId }),
+    query
+  )
+    .filter()
+    .sort()
+    .selectFields()
+    .paginate();
+
+  const goalsProgress = await goalsProgressQuery.modelQuery.populate('goal');
+  const meta = await goalsProgressQuery.getPaginationInformation();
+
+  return {
+    goalsProgress,
+    meta,
+  };
+};
+
 export const progressServices = {
   insertSubgoalProgressIntoDB,
   insertHabitProgressIntoDB,
   insertProgressIntoDB,
+  fetchGoalsProgressFromDB,
 };

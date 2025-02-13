@@ -12,7 +12,7 @@ const app = express();
 // application level middlewares that execute for every type of http request
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 
 // root route
 app.get('/', (req, res) => {
