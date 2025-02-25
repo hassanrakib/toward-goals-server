@@ -122,7 +122,9 @@ const insertHabitIntoDB = async (
   const duplicateHabit = await Habit.findOne({
     title: habit.title,
     unit: habit.unit,
-    difficulties: habit.difficulties,
+    'difficulties.mini': habit.difficulties.mini,
+    'difficulties.plus': habit.difficulties.plus,
+    'difficulties.elite': habit.difficulties.elite,
   }).collation({ locale: 'en', strength: 2 });
 
   if (duplicateHabit) {

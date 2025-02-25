@@ -20,9 +20,7 @@ export default class QueryBuilder<T> {
   }
 
   protected getExcludedFields(): string[] {
-    // exclude 'user' for safety purpose
-    // user based filtering will be done in the services
-    return ['searchTerm', 'sort', 'limit', 'page', 'fields', 'user'];
+    return ['searchTerm', 'sort', 'limit', 'page', 'fields'];
   }
 
   private parseCommaSeparatedFields(

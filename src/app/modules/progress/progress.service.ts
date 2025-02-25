@@ -212,7 +212,7 @@ const insertProgressIntoDB = async (
   return Progress.create(newProgress);
 };
 
-const fetchGoalsProgressFromDB = async (
+const fetchMyGoalsProgressFromDB = async (
   userUsername: string,
   query: QueryParams
 ) => {
@@ -241,5 +241,5 @@ export const progressServices = {
   insertSubgoalProgressIntoDB,
   insertHabitProgressIntoDB,
   insertProgressIntoDB,
-  fetchGoalsProgressFromDB,
+  fetchMyGoalsProgressFromDB,
 };
