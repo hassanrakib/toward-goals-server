@@ -21,7 +21,7 @@ router.post(
 );
 
 router.post(
-  '/create-progress',
+  '/create-goal-progress',
   auth(),
   validateRequest(progressValidations.createProgressSchema),
   progressControllers.createProgress

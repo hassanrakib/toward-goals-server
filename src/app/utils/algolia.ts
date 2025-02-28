@@ -2,7 +2,7 @@ import { algoliasearch } from 'algoliasearch';
 import config from '../config';
 
 // client
-const client = algoliasearch(
+export const client = algoliasearch(
   config.algolia_application_id!,
   config.algolia_write_api_key!
 );
