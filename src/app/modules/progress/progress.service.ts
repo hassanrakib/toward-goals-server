@@ -228,7 +228,21 @@ const fetchMyGoalsProgressFromDB = async (
     .selectFields()
     .paginate();
 
-  const goalsProgress = await goalsProgressQuery.modelQuery.populate('goal');
+  const goalsProgress = await goalsProgressQuery.modelQuery
+    .populate('goal')
+    .populate({
+      path: 'level',
+      populate: [
+        { path: 'requirements.consistency' },
+        { path: 'requirements.deepFocus' },
+        { path: 'requirements.commitment' },
+      ],
+    })
+    .populate([
+      { path: 'analytics.consistency.level' },
+      { path: 'analytics.deepFocus.level' },
+      { path: 'analytics.commitment.level' },
+    ]);
   const meta = await goalsProgressQuery.getPaginationInformation();
 
   return {

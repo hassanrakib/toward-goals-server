@@ -59,14 +59,17 @@ const requirementLevelSchema = new Schema<IRequirementLevel>({
 const levelRequirementsSchema = new Schema<LevelRequirements>({
   consistency: {
     type: Schema.Types.ObjectId,
+    ref: 'RequirementLevel',
     required: [true, 'Consistency requirement is required'],
   },
   deepFocus: {
     type: Schema.Types.ObjectId,
+    ref: 'RequirementLevel',
     required: [true, 'Deep focus requirement is required'],
   },
   commitment: {
     type: Schema.Types.ObjectId,
+    ref: 'RequirementLevel',
     required: [true, 'Commitment requirement is required'],
   },
 });

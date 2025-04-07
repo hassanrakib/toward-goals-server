@@ -231,6 +231,7 @@ const progressSchema = new Schema<IProgress>(
         },
         level: {
           type: Schema.Types.ObjectId,
+          ref: 'RequirementLevel',
           required: [true, 'Consistency level ID is required'],
         },
       },
@@ -243,6 +244,7 @@ const progressSchema = new Schema<IProgress>(
         },
         level: {
           type: Schema.Types.ObjectId,
+          ref: 'RequirementLevel',
           required: [true, 'Deep focus level ID is required'],
         },
       },
@@ -255,6 +257,7 @@ const progressSchema = new Schema<IProgress>(
         },
         level: {
           type: Schema.Types.ObjectId,
+          ref: 'RequirementLevel',
           required: [true, 'Commitment level ID is required'],
         },
       },

@@ -12,9 +12,9 @@ const setAlgoliaIndexSettings = async (
 };
 
 // set settings for any index
-setAlgoliaIndexSettings('goals', {
-  //   searchableAttributes: ['unordered(title)'],
-  //   customRanking: ['desc(userCount)'],
+setAlgoliaIndexSettings('habitUnits', {
+  searchableAttributes: ['type', 'unordered(name)'],
+  customRanking: ['desc(usageCount)'],
 })
   .then((response) => {
     console.log(response);
