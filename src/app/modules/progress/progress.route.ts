@@ -33,4 +33,10 @@ router.get(
   progressControllers.getMyGoalsProgress
 );
 
+router.get(
+  '/my-subgoals-progress',
+  auth(),
+  progressControllers.getMySubgoalsProgress
+);
+
 export const progressRoutes = router;
