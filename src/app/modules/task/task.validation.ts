@@ -1,4 +1,4 @@
-import { endOfToday, isAfter, isBefore } from 'date-fns';
+import { isAfter, isBefore, isToday } from 'date-fns';
 import { isMongoId } from 'validator';
 import { z } from 'zod';
 
@@ -81,7 +81,7 @@ const createTaskSchema = z.object({
       .refine((date) => isAfter(new Date(date), new Date()), {
         message: 'Deadline must be in the future.',
       })
-      .refine((date) => isBefore(new Date(date), endOfToday()), {
+      .refine((date) => isToday(new Date(date)), {
         message: 'Deadline must not exceed today.',
       }),
     // isCompleted: z.boolean().optional().default(false),

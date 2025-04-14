@@ -278,10 +278,42 @@ const fetchMySubgoalsProgressFromDB = async (
   };
 };
 
+const fetchMyHabitsProgressFromDB = async (
+  userUsername: string,
+  query: QueryParams
+) => {
+  // get the user _id to use it in the query
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
+  const habitsProgressQuery = new QueryBuilder(
+    HabitProgress.find({ user: userId }),
+    query
+  )
+    .filter()
+    .sort()
+    .selectFields()
+    .paginate();
+
+  const habitsProgress = await habitsProgressQuery.modelQuery.populate({
+    path: 'habit',
+    populate: {
+      path: 'unit',
+    },
+  });
+
+  const meta = await habitsProgressQuery.getPaginationInformation();
+
+  return {
+    habitsProgress,
+    meta,
+  };
+};
+
 export const progressServices = {
   insertSubgoalProgressIntoDB,
   insertHabitProgressIntoDB,
   insertProgressIntoDB,
   fetchMyGoalsProgressFromDB,
   fetchMySubgoalsProgressFromDB,
+  fetchMyHabitsProgressFromDB,
 };

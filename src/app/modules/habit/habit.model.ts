@@ -79,6 +79,7 @@ const habitSchema = new Schema<IHabit>({
   unit: {
     type: Schema.Types.ObjectId,
     required: [true, 'Habit unit is required.'],
+    ref: 'HabitUnit',
   },
   difficulties: {
     type: habitDifficultiesSchema,

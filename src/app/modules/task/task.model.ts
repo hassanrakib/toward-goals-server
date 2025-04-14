@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose';
 import { ITask, ITimeSpan } from './task.interface';
 import { isURL } from 'validator';
-import { endOfToday, isAfter, isBefore } from 'date-fns';
+import { isAfter, isBefore, isToday } from 'date-fns';
 
 const timeSpanSchema = new Schema<ITimeSpan>({
   task: {
@@ -109,7 +109,7 @@ const taskSchema = new Schema<ITask>(
           message: 'Deadline must be in the future.',
         },
         {
-          validator: (date: Date) => isBefore(date, endOfToday()),
+          validator: (date: Date) => isToday(date),
           message: 'Deadline must not exceed today.',
         },
       ],
