@@ -10,6 +10,7 @@ import {
 } from '../progress/progress.model';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 import { isBefore } from 'date-fns';
+import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
 
 const insertTimeSpanIntoDB = async (
   userUsername: string,
@@ -143,7 +144,33 @@ const insertTaskIntoDB = async (
   return Task.create(newTask);
 };
 
+const fetchMyTasksFromDB = async (userUsername: string, query: QueryParams) => {
+  // get the user _id to use it in the query
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
+  const tasksQuery = new QueryBuilder(Task.find({ user: userId }), query)
+    .filter()
+    .sort()
+    .selectFields()
+    .paginate();
+
+  const tasks = await tasksQuery.modelQuery.populate({
+    path: 'habit',
+    populate: {
+      path: 'unit',
+    },
+  });
+
+  const meta = await tasksQuery.getPaginationInformation();
+
+  return {
+    tasks,
+    meta,
+  };
+};
+
 export const taskServices = {
   insertTimeSpanIntoDB,
   insertTaskIntoDB,
+  fetchMyTasksFromDB,
 };

@@ -42,7 +42,23 @@ const createTask = catchAsync(
   }
 );
 
+const getMyTasks = catchAsync(async (req, res) => {
+  const { tasks, meta } = await taskServices.fetchMyTasksFromDB(
+    req.user.username,
+    req.query
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'My tasks are retrieved successfully',
+    data: tasks,
+    meta,
+  });
+});
+
 export const taskControllers = {
   createTimeSpan,
   createTask,
+  getMyTasks,
 };

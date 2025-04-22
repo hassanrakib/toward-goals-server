@@ -55,12 +55,9 @@ const taskSchema = new Schema<ITask>(
       required: [true, 'Habit is required.'],
       ref: 'Habit',
     },
-    title: {
-      type: String,
-      required: [true, 'Title is required'],
-      trim: true,
-      minlength: [5, 'Title must be at least 5 characters long'],
-      maxlength: [50, 'Title cannot exceed 50 characters'],
+    description: {
+      type: Schema.Types.Mixed,
+      required: [true, 'Task description is required'],
     },
     completedUnits: {
       type: Number,
@@ -70,21 +67,6 @@ const taskSchema = new Schema<ITask>(
         validator: Number.isInteger,
         message: 'Completed units must be an integer.',
       },
-    },
-    milestones: {
-      type: [String],
-      validate: [
-        {
-          validator: (milestones: string[]) => milestones.length <= 4,
-          message: 'There must be no more than 4 milestones',
-        },
-        {
-          validator: (milestones: string[]) =>
-            milestones.every((milestone) => milestone.length >= 3),
-          message: 'Each milestone must be at least 3 characters long',
-        },
-      ],
-      default: [],
     },
     images: {
       type: [String],

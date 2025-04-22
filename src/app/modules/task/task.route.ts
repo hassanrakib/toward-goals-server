@@ -22,4 +22,6 @@ router.post(
   taskControllers.createTask
 );
 
+router.get('/my-tasks', auth(), taskControllers.getMyTasks);
+
 export const taskRoutes = router;

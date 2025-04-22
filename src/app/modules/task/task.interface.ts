@@ -11,9 +11,8 @@ export interface ITask {
   goal: Types.ObjectId;
   subgoal: Types.ObjectId;
   habit: Types.ObjectId;
-  title: string;
+  description: unknown;
   completedUnits?: number;
-  milestones?: string[];
   images?: string[];
   deadline: Date;
   isCompleted?: boolean;
@@ -23,5 +22,5 @@ export interface ITask {
 
 export type TaskCreationData = Pick<
   ITask,
-  'goal' | 'subgoal' | 'habit' | 'title' | 'deadline'
->;
+  'goal' | 'subgoal' | 'habit' | 'description' | 'deadline'
+> & { title: string };
