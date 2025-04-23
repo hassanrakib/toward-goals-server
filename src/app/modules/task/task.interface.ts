@@ -11,7 +11,8 @@ export interface ITask {
   goal: Types.ObjectId;
   subgoal: Types.ObjectId;
   habit: Types.ObjectId;
-  description: unknown;
+  // html string
+  description: string;
   completedUnits?: number;
   images?: string[];
   deadline: Date;

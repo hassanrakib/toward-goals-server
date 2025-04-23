@@ -56,7 +56,7 @@ const taskSchema = new Schema<ITask>(
       ref: 'Habit',
     },
     description: {
-      type: Schema.Types.Mixed,
+      type: String,
       required: [true, 'Task description is required'],
     },
     completedUnits: {

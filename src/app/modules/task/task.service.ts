@@ -11,6 +11,7 @@ import {
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 import { isBefore } from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
+import { sanitizeTaskDescription } from './task.util';
 
 const insertTimeSpanIntoDB = async (
   userUsername: string,
@@ -118,9 +119,12 @@ const insertTaskIntoDB = async (
   if (incompleteTask) {
     throw new AppError(httpStatus.BAD_REQUEST, 'You have a task incomplete');
   }
-
+  // new task
   const newTask: ITask = {
     ...task,
+    // santize will santize the html
+    // to remove dangerous scripts, event handlers, etc from html
+    description: sanitizeTaskDescription(task.description),
     user: userId,
   };
 

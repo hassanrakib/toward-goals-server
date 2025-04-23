@@ -58,11 +58,10 @@ const createTaskSchema = z.object({
         message: 'Habit is not valid',
       }),
     title: z
-      .string()
-      .min(1, { message: 'Title is required' })
+      .string({ required_error: 'Title is required' })
       .min(5, { message: 'Title must be at least 5 characters long' })
       .max(50, { message: 'Title cannot exceed 50 characters' }),
-    description: z.unknown({ required_error: 'Task description is required' }),
+    description: z.string({ required_error: 'Task description is required' }),
     // completedUnits: z
     //   .number()
     //   .int('Completed units must be an integer.')
