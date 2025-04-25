@@ -24,4 +24,6 @@ router.post(
 
 router.get('/my-tasks', auth(), taskControllers.getMyTasks);
 
+router.get('/:taskId/time-spans', auth(), taskControllers.getTaskTimeSpans);
+
 export const taskRoutes = router;

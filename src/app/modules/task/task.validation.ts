@@ -88,7 +88,16 @@ const createTaskSchema = z.object({
   }),
 });
 
+const updateTaskSchema = z.object({
+  completedUnits: z
+    .number()
+    .int('Completed units must be an integer.')
+    .min(0, 'Completed units cannot be less than 1.')
+    .optional(),
+});
+
 export const taskValidations = {
   createTimeSpanSchema,
   createTaskSchema,
+  updateTaskSchema,
 };

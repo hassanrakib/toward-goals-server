@@ -57,8 +57,22 @@ const getMyTasks = catchAsync(async (req, res) => {
   });
 });
 
+const getTaskTimeSpans = catchAsync(
+  async (req: Request<{ taskId?: string }>, res) => {
+    const result = await taskServices.fetchTaskTimeSpans(req.params.taskId!);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Task time spans retrieved successfully',
+      data: result,
+    });
+  }
+);
+
 export const taskControllers = {
   createTimeSpan,
   createTask,
   getMyTasks,
+  getTaskTimeSpans,
 };

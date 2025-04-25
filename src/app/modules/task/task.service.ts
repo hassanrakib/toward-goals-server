@@ -158,12 +158,15 @@ const fetchMyTasksFromDB = async (userUsername: string, query: QueryParams) => {
     .selectFields()
     .paginate();
 
-  const tasks = await tasksQuery.modelQuery.populate({
-    path: 'habit',
-    populate: {
-      path: 'unit',
-    },
-  });
+  const tasks = await tasksQuery.modelQuery
+    .populate({
+      path: 'habit',
+      populate: {
+        path: 'unit',
+      },
+    })
+    // populating user field and selecting only the username of the user
+    .populate('user', 'username');
 
   const meta = await tasksQuery.getPaginationInformation();
 
@@ -173,8 +176,20 @@ const fetchMyTasksFromDB = async (userUsername: string, query: QueryParams) => {
   };
 };
 
+const fetchTaskTimeSpans = async (taskId: string) => {
+  // check whether taskId is valid
+  const task = await Task.findById(taskId, '_id').lean();
+
+  if (!task) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Task is not found!');
+  }
+
+  return TimeSpan.find({ task: taskId });
+};
+
 export const taskServices = {
   insertTimeSpanIntoDB,
   insertTaskIntoDB,
   fetchMyTasksFromDB,
+  fetchTaskTimeSpans,
 };
