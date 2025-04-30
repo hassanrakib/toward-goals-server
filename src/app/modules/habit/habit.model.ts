@@ -38,35 +38,38 @@ const habitUnitSchema = new Schema<IHabitUnit>({
   },
 });
 
-const habitDifficultiesSchema = new Schema<IHabitDifficulties>({
-  mini: {
-    type: Number,
-    required: [true, 'Mini difficulty level is required.'],
-    min: [1, 'Mini difficulty must be at least 1.'],
-  },
-  plus: {
-    type: Number,
-    required: [true, 'Plus difficulty level is required.'],
-    min: [2, 'Plus difficulty must be at least 2.'],
-    validate: {
-      validator: function (value: number) {
-        return value > this.mini;
+const habitDifficultiesSchema = new Schema<IHabitDifficulties>(
+  {
+    mini: {
+      type: Number,
+      required: [true, 'Mini difficulty level is required.'],
+      min: [1, 'Mini difficulty must be at least 1.'],
+    },
+    plus: {
+      type: Number,
+      required: [true, 'Plus difficulty level is required.'],
+      min: [2, 'Plus difficulty must be at least 2.'],
+      validate: {
+        validator: function (value: number) {
+          return value > this.mini;
+        },
+        message: 'Plus difficulty must be greater than mini difficulty',
       },
-      message: 'Plus difficulty must be greater than mini difficulty',
+    },
+    elite: {
+      type: Number,
+      required: [true, 'Elite difficulty level is required.'],
+      min: [3, 'Elite difficulty must be at least 3.'],
+      validate: {
+        validator: function (value: number) {
+          return value > this.plus;
+        },
+        message: 'Elite difficulty must be greater than plus difficulty',
+      },
     },
   },
-  elite: {
-    type: Number,
-    required: [true, 'Elite difficulty level is required.'],
-    min: [3, 'Elite difficulty must be at least 3.'],
-    validate: {
-      validator: function (value: number) {
-        return value > this.plus;
-      },
-      message: 'Elite difficulty must be greater than plus difficulty',
-    },
-  },
-});
+  { _id: false }
+);
 
 const habitSchema = new Schema<IHabit>({
   title: {

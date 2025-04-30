@@ -309,6 +309,38 @@ const fetchMyHabitsProgressFromDB = async (
   };
 };
 
+const fetchMyGoalProgressLevel = async (
+  userUsername: string,
+  goalId: string
+) => {
+  // get the user _id to use it in the query
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
+  // check if goalId is valid
+  const goal = await Goal.findById(goalId);
+
+  if (!goal) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'Goal not found. Id is not valid.'
+    );
+  }
+
+  const goalProgress = await Progress.findOne(
+    { goal: goalId, user: userId },
+    'level'
+  )
+    .populate('level', 'level')
+    .lean();
+
+  // if no goalProgress found
+  if (!goalProgress) {
+    throw new AppError(httpStatus.NOT_FOUND, 'GoalProgress not found!');
+  }
+
+  return goalProgress.level;
+};
+
 export const progressServices = {
   insertSubgoalProgressIntoDB,
   insertHabitProgressIntoDB,
@@ -316,4 +348,5 @@ export const progressServices = {
   fetchMyGoalsProgressFromDB,
   fetchMySubgoalsProgressFromDB,
   fetchMyHabitsProgressFromDB,
+  fetchMyGoalProgressLevel,
 };

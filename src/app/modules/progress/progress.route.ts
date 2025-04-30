@@ -45,4 +45,10 @@ router.get(
   progressControllers.getMyHabitsProgress
 );
 
+router.get(
+  '/my-goal-progress/:goalId/level',
+  auth(),
+  progressControllers.getMyGoalProgressLevel
+);
+
 export const progressRoutes = router;

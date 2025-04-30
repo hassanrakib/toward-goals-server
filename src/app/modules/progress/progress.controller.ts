@@ -105,6 +105,22 @@ const getMyHabitsProgress = catchAsync(async (req, res) => {
   });
 });
 
+const getMyGoalProgressLevel = catchAsync(
+  async (req: Request<{ goalId?: string }, {}, {}>, res) => {
+    const level = await progressServices.fetchMyGoalProgressLevel(
+      req.user.username,
+      req.params.goalId!
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'My goal progress level retrieved successfully',
+      data: level,
+    });
+  }
+);
+
 export const progressControllers = {
   createSubgoalProgress,
   createHabitProgress,
@@ -112,4 +128,5 @@ export const progressControllers = {
   getMyGoalsProgress,
   getMySubgoalsProgress,
   getMyHabitsProgress,
+  getMyGoalProgressLevel,
 };
