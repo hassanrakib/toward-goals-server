@@ -26,4 +26,11 @@ router.get('/my-tasks', auth(), taskControllers.getMyTasks);
 
 router.get('/:taskId/time-spans', auth(), taskControllers.getTaskTimeSpans);
 
+router.patch(
+  '/:taskId',
+  auth(),
+  validateRequest(taskValidations.updateTaskSchema),
+  taskControllers.updateTask
+);
+
 export const taskRoutes = router;

@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import catchAsync from '../../utils/catch-async';
 import sendResponse from '../../utils/send-response';
-import { ITimeSpan, TaskCreationData } from './task.interface';
+import { ITimeSpan, TaskCreationData, TaskUpdateData } from './task.interface';
 import { Request } from 'express';
 import { taskServices } from './task.service';
 import { getMulterUploadedFiles } from '../../utils/get-multer-uploads';
@@ -70,9 +70,26 @@ const getTaskTimeSpans = catchAsync(
   }
 );
 
+const updateTask = catchAsync(
+  async (req: Request<{ taskId?: string }, {}, TaskUpdateData>, res) => {
+    const result = await taskServices.updateTaskById(
+      req.params.taskId!,
+      req.body
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Task updated successfully',
+      data: result,
+    });
+  }
+);
+
 export const taskControllers = {
   createTimeSpan,
   createTask,
   getMyTasks,
   getTaskTimeSpans,
+  updateTask,
 };

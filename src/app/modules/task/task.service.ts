@@ -1,6 +1,11 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
-import { ITask, ITimeSpan, TaskCreationData } from './task.interface';
+import {
+  ITask,
+  ITimeSpan,
+  TaskCreationData,
+  TaskUpdateData,
+} from './task.interface';
 import { Task, TimeSpan } from './task.model';
 import { User } from '../user/user.model';
 import {
@@ -187,9 +192,29 @@ const fetchTaskTimeSpans = async (taskId: string) => {
   return TimeSpan.find({ task: taskId });
 };
 
+const updateTaskById = async (
+  taskId: string,
+  taskUpdateData: TaskUpdateData
+) => {
+  // check whether taskId is valid
+  const task = await Task.findById(taskId, '_id').lean();
+
+  if (!task) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Task is not found!');
+  }
+
+  const result = await Task.findByIdAndUpdate(taskId, taskUpdateData, {
+    new: true,
+    runValidators: true,
+  });
+
+  return result;
+};
+
 export const taskServices = {
   insertTimeSpanIntoDB,
   insertTaskIntoDB,
   fetchMyTasksFromDB,
   fetchTaskTimeSpans,
+  updateTaskById,
 };
