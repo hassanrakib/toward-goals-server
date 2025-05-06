@@ -16,7 +16,12 @@ import {
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 import { isBefore } from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
-import { sanitizeTaskDescription } from './task.util';
+import {
+  capitalizeFirstLetter,
+  getCompletedHabitDifficultyName,
+  sanitizeTaskDescription,
+} from './task.util';
+import { IHabit } from '../habit/habit.interface';
 
 const insertTimeSpanIntoDB = async (
   userUsername: string,
@@ -197,13 +202,93 @@ const updateTaskById = async (
   taskUpdateData: TaskUpdateData
 ) => {
   // check whether taskId is valid
-  const task = await Task.findById(taskId, '_id').lean();
+  const task = await Task.findById(taskId)
+    // populate with 'paths' generic
+    .populate<{ habit: IHabit }>('habit')
+    .lean();
 
   if (!task) {
     throw new AppError(httpStatus.NOT_FOUND, 'Task is not found!');
   }
 
-  const result = await Task.findByIdAndUpdate(taskId, taskUpdateData, {
+  // if taskUpdateData has isCompleted: true
+  // check at least mini version of the selected habit completed
+  if (
+    taskUpdateData.isCompleted &&
+    task.completedUnits! < task.habit.difficulties.mini
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Must complete the mini version of the habit'
+    );
+  }
+
+  // if taskUpdateData.newCompletedUnits found
+  let totalCompletedUnits: number | undefined;
+  if (taskUpdateData.newCompletedUnits) {
+    // calculate total completed units
+    totalCompletedUnits =
+      task.completedUnits! + taskUpdateData.newCompletedUnits;
+
+    // get the previous completed difficulty
+    const prevCompletedDifficultyName = getCompletedHabitDifficultyName(
+      task.habit.difficulties,
+      task.completedUnits!
+    );
+
+    // currently completed difficulty name
+    const newCompletedDifficultyName = getCompletedHabitDifficultyName(
+      task.habit.difficulties,
+      totalCompletedUnits
+    );
+
+    // if new completed habit difficulty is different than prev completed difficulty
+    if (prevCompletedDifficultyName !== newCompletedDifficultyName) {
+      // create an update for goal progress
+      const updateForGoalProgress: Record<string, unknown> = {};
+
+      // if prevCompletedDifficultyName is found
+      if (prevCompletedDifficultyName) {
+        // construct the field name
+        const field = `total${capitalizeFirstLetter(prevCompletedDifficultyName)}Completion`;
+
+        // decrement the field value by 1
+        updateForGoalProgress.$inc = { [field]: -1 };
+      }
+
+      // if newCompletedDifficultyName is found
+      if (newCompletedDifficultyName) {
+        // construct the field name
+        const field = `total${capitalizeFirstLetter(newCompletedDifficultyName)}Completion`;
+
+        // and increment the field value by 1
+        updateForGoalProgress.$inc = {
+          // copy update for prevCompletedDifficultyName using $inc operator
+          ...(updateForGoalProgress.$inc || {}),
+          [field]: 1,
+        };
+      }
+
+      // if update available
+      if (Object.keys(updateForGoalProgress).length > 0) {
+        // do update in goal progress
+        await Progress.findOneAndUpdate(
+          { goal: task.goal },
+          updateForGoalProgress
+        );
+      }
+    }
+  }
+
+  // update to the task
+  const update = {
+    // if any of the fields value is undefined
+    // mongoose will opt that field out of the update operation
+    isCompleted: taskUpdateData.isCompleted,
+    completedUnits: totalCompletedUnits,
+  };
+
+  const result = await Task.findByIdAndUpdate(taskId, update, {
     new: true,
     runValidators: true,
   });

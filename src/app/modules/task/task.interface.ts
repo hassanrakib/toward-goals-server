@@ -26,7 +26,7 @@ export type TaskCreationData = Pick<
   'goal' | 'subgoal' | 'habit' | 'description' | 'deadline'
 > & { title: string };
 
-export type TaskUpdateData = Pick<
-  Partial<ITask>,
-  'completedUnits' | 'isCompleted'
->;
+export interface TaskUpdateData {
+  newCompletedUnits?: number;
+  isCompleted?: true;
+}

@@ -33,4 +33,6 @@ export interface IHabit {
   difficulties: IHabitDifficulties;
 }
 
+export type HabitDifficultiesName = keyof IHabitDifficulties;
+
 export type HabitCreationData = Omit<IHabit, 'usageCount'>;

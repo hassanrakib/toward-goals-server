@@ -90,10 +90,10 @@ const createTaskSchema = z.object({
 
 const updateTaskSchema = z.object({
   body: z.object({
-    completedUnits: z
+    newCompletedUnits: z
       .number()
-      .int('Completed units must be an integer.')
-      .min(0, 'Completed units cannot be less than 1.')
+      .int('New completed units must be an integer.')
+      .min(0, 'New completed units cannot be less than 1.')
       .optional(),
     isCompleted: z.literal(true).optional(),
   }),
