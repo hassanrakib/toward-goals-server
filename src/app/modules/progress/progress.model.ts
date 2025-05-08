@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose';
 import {
   IHabitProgress,
-  IProgress,
+  IGoalProgress,
   ISubgoalProgress,
 } from './progress.interface';
 
@@ -113,7 +113,7 @@ const habitProgressSchema = new Schema<IHabitProgress>(
   }
 );
 
-const progressSchema = new Schema<IProgress>(
+const goalProgressSchema = new Schema<IGoalProgress>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -177,26 +177,34 @@ const progressSchema = new Schema<IProgress>(
             message: 'Current work streak must be an integer',
           },
         },
-        total: {
+        lastStreakDate: {
+          type: Date,
+          required: true,
+        },
+      },
+      default: { current: 0, lastStreakDate: null },
+    },
+    dayStats: {
+      type: {
+        workedDays: {
           type: Number,
           required: true,
-          min: [0, 'Total work streak must be a non-negative number'],
+          min: [0, 'Total work days must be a non-negative number'],
           validate: {
             validator: Number.isInteger,
-            message: 'Total work streak must be an integer',
+            message: 'Total work days must be an integer',
+          },
+        },
+        skippedDays: {
+          type: Number,
+          min: [0, 'Skipped days must be a non-negative number'],
+          validate: {
+            validator: Number.isInteger,
+            message: 'Skipped days must be an integer',
           },
         },
       },
-      default: { current: 0, total: 0 },
-    },
-    skippedDays: {
-      type: Number,
-      min: [0, 'Skipped days must be a non-negative number'],
-      validate: {
-        validator: Number.isInteger,
-        message: 'Skipped days must be an integer',
-      },
-      default: 0,
+      default: { workedDays: 0, skippedDays: 0 },
     },
     todosDeadlines: {
       type: {
@@ -279,4 +287,7 @@ export const HabitProgress = model<IHabitProgress>(
   habitProgressSchema
 );
 
-export const Progress = model<IProgress>('Progress', progressSchema);
+export const GoalProgress = model<IGoalProgress>(
+  'GoalProgress',
+  goalProgressSchema
+);

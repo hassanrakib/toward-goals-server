@@ -23,8 +23,8 @@ router.post(
 router.post(
   '/create-goal-progress',
   auth(),
-  validateRequest(progressValidations.createProgressSchema),
-  progressControllers.createProgress
+  validateRequest(progressValidations.createGoalProgressSchema),
+  progressControllers.createGoalProgress
 );
 
 router.get(

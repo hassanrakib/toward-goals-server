@@ -78,7 +78,7 @@ const createHabitProgressSchema = z.object({
   }),
 });
 
-const createProgressSchema = z.object({
+const createGoalProgressSchema = z.object({
   body: z.object({
     goal: z
       .string({
@@ -197,5 +197,5 @@ const createProgressSchema = z.object({
 export const progressValidations = {
   createSubgoalProgressSchema,
   createHabitProgressSchema,
-  createProgressSchema,
+  createGoalProgressSchema,
 };

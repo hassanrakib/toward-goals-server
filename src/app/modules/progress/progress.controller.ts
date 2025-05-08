@@ -4,7 +4,7 @@ import sendResponse from '../../utils/send-response';
 import { Request } from 'express';
 import {
   HabitProgressCreationData,
-  ProgressCreationData,
+  GoalProgressCreationData,
   SubgoalProgressCreationData,
 } from './progress.interface';
 import { progressServices } from './progress.service';
@@ -41,9 +41,9 @@ const createHabitProgress = catchAsync(
   }
 );
 
-const createProgress = catchAsync(
-  async (req: Request<{}, {}, ProgressCreationData>, res) => {
-    const progress = await progressServices.insertProgressIntoDB(
+const createGoalProgress = catchAsync(
+  async (req: Request<{}, {}, GoalProgressCreationData>, res) => {
+    const progress = await progressServices.insertGoalProgressIntoDB(
       req.user.username,
       req.body
     );
@@ -124,7 +124,7 @@ const getMyGoalProgressLevel = catchAsync(
 export const progressControllers = {
   createSubgoalProgress,
   createHabitProgress,
-  createProgress,
+  createGoalProgress,
   getMyGoalsProgress,
   getMySubgoalsProgress,
   getMyHabitsProgress,

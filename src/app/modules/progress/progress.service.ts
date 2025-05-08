@@ -5,12 +5,12 @@ import { User } from '../user/user.model';
 import {
   HabitProgressCreationData,
   IHabitProgress,
-  IProgress,
+  IGoalProgress,
   ISubgoalProgress,
-  ProgressCreationData,
+  GoalProgressCreationData,
   SubgoalProgressCreationData,
 } from './progress.interface';
-import { HabitProgress, Progress, SubgoalProgress } from './progress.model';
+import { HabitProgress, GoalProgress, SubgoalProgress } from './progress.model';
 import { Goal } from '../goal/goal.model';
 import { Habit } from '../habit/habit.model';
 import { Level } from '../level/level.model';
@@ -46,7 +46,7 @@ const insertSubgoalProgressIntoDB = async (
 
   // don't allow creating subgoalProgress when progress for the goal is not found
   // also, don't allow if the goal progress tells that the user already completed the goal
-  const progress = await Progress.findOne(
+  const progress = await GoalProgress.findOne(
     { goal: goal._id, user: userId },
     '_id isCompleted'
   ).lean();
@@ -113,7 +113,7 @@ const insertHabitProgressIntoDB = async (
   }
 
   // check if the user is really into the goal
-  const progress = await Progress.findOne(
+  const progress = await GoalProgress.findOne(
     { goal: habitProgress.goal, user: userId },
     '_id isCompleted'
   ).lean();
@@ -149,9 +149,9 @@ const insertHabitProgressIntoDB = async (
   return HabitProgress.create(newHabitProgress);
 };
 
-const insertProgressIntoDB = async (
+const insertGoalProgressIntoDB = async (
   userUsername: string,
-  progress: ProgressCreationData
+  progress: GoalProgressCreationData
 ) => {
   // get the user _id to use it in the progress creation
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
@@ -189,7 +189,7 @@ const insertProgressIntoDB = async (
   // }
 
   // check if the user is already into the goal
-  const existingProgress = await Progress.findOne(
+  const existingProgress = await GoalProgress.findOne(
     { goal: goal._id, user: userId },
     '_id'
   ).lean();
@@ -198,7 +198,7 @@ const insertProgressIntoDB = async (
     throw new AppError(httpStatus.BAD_REQUEST, 'You are already into the goal');
   }
 
-  const newProgress: IProgress = {
+  const newProgress: IGoalProgress = {
     ...progress,
     level: mainLevel._id,
     analytics: {
@@ -209,7 +209,7 @@ const insertProgressIntoDB = async (
     user: userId,
   };
 
-  return Progress.create(newProgress);
+  return GoalProgress.create(newProgress);
 };
 
 const fetchMyGoalsProgressFromDB = async (
@@ -220,7 +220,7 @@ const fetchMyGoalsProgressFromDB = async (
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
   const goalsProgressQuery = new QueryBuilder(
-    Progress.find({ user: userId }),
+    GoalProgress.find({ user: userId }),
     query
   )
     .filter()
@@ -326,7 +326,7 @@ const fetchMyGoalProgressLevel = async (
     );
   }
 
-  const goalProgress = await Progress.findOne(
+  const goalProgress = await GoalProgress.findOne(
     { goal: goalId, user: userId },
     'level'
   )
@@ -344,7 +344,7 @@ const fetchMyGoalProgressLevel = async (
 export const progressServices = {
   insertSubgoalProgressIntoDB,
   insertHabitProgressIntoDB,
-  insertProgressIntoDB,
+  insertGoalProgressIntoDB,
   fetchMyGoalsProgressFromDB,
   fetchMySubgoalsProgressFromDB,
   fetchMyHabitsProgressFromDB,

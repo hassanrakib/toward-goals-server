@@ -27,7 +27,7 @@ export interface IHabitProgress {
 
 export type HabitProgressCreationData = Pick<IHabitProgress, 'goal' | 'habit'>;
 
-export interface IProgress {
+export interface IGoalProgress {
   user: Types.ObjectId;
   goal: Types.ObjectId;
   level: Types.ObjectId;
@@ -35,8 +35,8 @@ export interface IProgress {
   totalMiniCompletion?: number;
   totalPlusCompletion?: number;
   totalEliteCompletion?: number;
-  workStreak?: { current: number; total: number };
-  skippedDays?: number;
+  workStreak?: { current: number; lastStreakDate: Date };
+  dayStats?: { skippedDays: number; workedDays: number };
   todosDeadlines?: { missed: number; met: number };
   analytics: {
     consistency: { percent?: number; level: Types.ObjectId };
@@ -46,4 +46,4 @@ export interface IProgress {
   isCompleted?: boolean;
 }
 
-export type ProgressCreationData = Pick<IProgress, 'goal'>;
+export type GoalProgressCreationData = Pick<IGoalProgress, 'goal'>;
