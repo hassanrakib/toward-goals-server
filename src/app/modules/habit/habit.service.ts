@@ -2,7 +2,7 @@ import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { HabitUnitCreationData, HabitCreationData } from './habit.interface';
 import { Habit, HabitUnit } from './habit.model';
-import { HabitProgress, Progress } from '../progress/progress.model';
+import { HabitProgress, GoalProgress } from '../progress/progress.model';
 import { User } from '../user/user.model';
 import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 
@@ -15,7 +15,7 @@ const insertHabitUnitIntoDB = async (
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
   // check if the user is really into the goal
-  const progress = await Progress.findOne(
+  const progress = await GoalProgress.findOne(
     { goal: goalId, user: userId },
     '_id isCompleted'
   ).lean();
@@ -87,7 +87,7 @@ const insertHabitIntoDB = async (
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
   // check if the user is really into the goal
-  const progress = await Progress.findOne(
+  const progress = await GoalProgress.findOne(
     { goal: goalId, user: userId },
     '_id isCompleted'
   ).lean();

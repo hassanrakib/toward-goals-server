@@ -10,7 +10,7 @@ import { Task, TimeSpan } from './task.model';
 import { User } from '../user/user.model';
 import {
   HabitProgress,
-  Progress,
+  GoalProgress,
   SubgoalProgress,
 } from '../progress/progress.model';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
@@ -67,7 +67,7 @@ const insertTaskIntoDB = async (
 
   // don't allow creating task when progress for the goal is not found
   // also, don't allow if the goal progress tells that the user already completed the goal
-  const progress = await Progress.findOne(
+  const progress = await GoalProgress.findOne(
     { goal: task.goal, user: userId },
     '_id isCompleted'
   ).lean();
@@ -286,7 +286,7 @@ const updateTaskById = async (
       }
 
       // update user task goal progress
-      await Progress.findOneAndUpdate(
+      await GoalProgress.findOneAndUpdate(
         { goal: task.goal, user: task.user },
         updateForGoalProgress
       );

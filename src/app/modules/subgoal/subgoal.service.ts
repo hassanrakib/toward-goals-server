@@ -5,7 +5,7 @@ import { User } from '../user/user.model';
 import { ISubgoal } from './subgoal.interface';
 import { Subgoal } from './subgoal.model';
 import { addDays, isAfter, isBefore } from 'date-fns';
-import { Progress, SubgoalProgress } from '../progress/progress.model';
+import { GoalProgress, SubgoalProgress } from '../progress/progress.model';
 import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 
 const insertSubgoalIntoDB = async (
@@ -25,7 +25,7 @@ const insertSubgoalIntoDB = async (
 
   // don't allow creating subgoal when progress for that goal is not found
   // also, don't allow if the goal progress tells that the user already completed the goal
-  const progress = await Progress.findOne(
+  const progress = await GoalProgress.findOne(
     { goal: goalId, user: userId },
     '_id isCompleted'
   ).lean();
