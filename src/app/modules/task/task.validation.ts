@@ -93,7 +93,7 @@ const updateTaskSchema = z.object({
     newCompletedUnits: z
       .number()
       .int('New completed units must be an integer.')
-      .min(0, 'New completed units cannot be less than 1.')
+      .min(1, 'New completed units cannot be less than 1.')
       .optional(),
     isCompleted: z.literal(true).optional(),
   }),

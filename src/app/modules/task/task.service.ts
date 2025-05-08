@@ -224,6 +224,7 @@ const updateTaskById = async (
   }
 
   // if taskUpdateData.newCompletedUnits found
+  // then also it has to be greater than 0, because 0 is falsy
   let totalCompletedUnits: number | undefined;
   if (taskUpdateData.newCompletedUnits) {
     // calculate total completed units
@@ -242,6 +243,9 @@ const updateTaskById = async (
       totalCompletedUnits
     );
 
+    // create an update for habit progress
+    const updateForHabitProgress: Record<string, unknown> = {};
+
     // if new completed habit difficulty is different than prev completed difficulty
     if (prevCompletedDifficultyName !== newCompletedDifficultyName) {
       // create an update for goal progress
@@ -249,35 +253,59 @@ const updateTaskById = async (
 
       // if prevCompletedDifficultyName is found
       if (prevCompletedDifficultyName) {
-        // construct the field name
-        const field = `total${capitalizeFirstLetter(prevCompletedDifficultyName)}Completion`;
+        // construct the field name of goal progress
+        const fieldInGoalProgress = `total${capitalizeFirstLetter(prevCompletedDifficultyName)}Completion`;
+        // construct the field name of habit progress
+        const fieldInHabitProgress = `${prevCompletedDifficultyName}Completion`;
 
-        // decrement the field value by 1
-        updateForGoalProgress.$inc = { [field]: -1 };
+        // decrement the field value by 1 in goal progress
+        updateForGoalProgress.$inc = { [fieldInGoalProgress]: -1 };
+        // decrement the field value by 1 in habit progress
+        updateForHabitProgress.$inc = { [fieldInHabitProgress]: -1 };
       }
 
       // if newCompletedDifficultyName is found
       if (newCompletedDifficultyName) {
-        // construct the field name
-        const field = `total${capitalizeFirstLetter(newCompletedDifficultyName)}Completion`;
+        // construct the field name of goal progress
+        const fieldInGoalProgress = `total${capitalizeFirstLetter(newCompletedDifficultyName)}Completion`;
+        // construct the field name of habit progress
+        const fieldInHabitProgress = `${newCompletedDifficultyName}Completion`;
 
-        // and increment the field value by 1
+        // and increment the field value by 1 in goal progress
         updateForGoalProgress.$inc = {
-          // copy update for prevCompletedDifficultyName using $inc operator
+          // copy update for prevCompletedDifficultyName that is using $inc operator
           ...(updateForGoalProgress.$inc || {}),
-          [field]: 1,
+          [fieldInGoalProgress]: 1,
+        };
+        // and increment the field value by 1 in habit progress
+        updateForHabitProgress.$inc = {
+          // copy update for prevCompletedDifficultyName that is using $inc operator
+          ...(updateForHabitProgress.$inc || {}),
+          [fieldInHabitProgress]: 1,
         };
       }
 
-      // if update available
-      if (Object.keys(updateForGoalProgress).length > 0) {
-        // do update in goal progress
-        await Progress.findOneAndUpdate(
-          { goal: task.goal },
-          updateForGoalProgress
-        );
-      }
+      // update user task goal progress
+      await Progress.findOneAndUpdate(
+        { goal: task.goal, user: task.user },
+        updateForGoalProgress
+      );
     }
+
+    // add newCompletedUnits to totalUnitCompleted
+    updateForHabitProgress.$inc = {
+      // copy update using same $inc operator
+      ...(updateForHabitProgress.$inc || {}),
+      totalUnitCompleted: taskUpdateData.newCompletedUnits,
+    };
+    // update user task habit progress
+    await HabitProgress.findOneAndUpdate(
+      {
+        habit: task.habit,
+        user: task.user,
+      },
+      updateForHabitProgress
+    );
   }
 
   // update to the task
