@@ -14,9 +14,10 @@ import {
   SubgoalProgress,
 } from '../progress/progress.model';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
-import { isBefore } from 'date-fns';
+import { isBefore, isYesterday, startOfYesterday } from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
 import {
+  addPathToIncOperatorOfUpdateObj,
   capitalizeFirstLetter,
   getCompletedHabitDifficultyName,
   sanitizeTaskDescription,
@@ -211,16 +212,80 @@ const updateTaskById = async (
     throw new AppError(httpStatus.NOT_FOUND, 'Task is not found!');
   }
 
+  // create an update for goal progress
+  const updateForGoalProgress: Record<string, unknown> = {};
+
   // if taskUpdateData has isCompleted: true
-  // check at least mini version of the selected habit completed
-  if (
-    taskUpdateData.isCompleted &&
-    task.completedUnits! < task.habit.difficulties.mini
-  ) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Must complete the mini version of the habit'
-    );
+  // update goal progress workStreak.current & workStreak.lastStreakDate
+  // update goal progress todosDeadlines
+  if (taskUpdateData.isCompleted) {
+    // check at least mini version of the selected habit completed
+    if (task.completedUnits! < task.habit.difficulties.mini) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Must complete the mini version of the habit'
+      );
+    }
+
+    // get the task's goal progress
+    const goalProgress = await GoalProgress.findOne({
+      goal: task.goal,
+      user: task.user,
+    })
+      .select('workStreak')
+      .lean();
+
+    // if no goalProgress found
+    if (!goalProgress) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Something went wrong!');
+    }
+
+    // if the last streak date is undefined (no task completed so far for the goal)
+    // if the last streak date is yesterday
+    if (
+      !goalProgress.workStreak?.lastStreakDate ||
+      isYesterday(goalProgress.workStreak.lastStreakDate)
+    ) {
+      // increment the current streak by 1
+      addPathToIncOperatorOfUpdateObj(
+        updateForGoalProgress,
+        'workStreak.current',
+        1
+      );
+      // also update the last streak date
+      updateForGoalProgress['workStreak.lastStreakDate'] =
+        new Date().toISOString();
+    }
+
+    // or if the last streak date is before yesterday
+    if (
+      goalProgress.workStreak?.lastStreakDate &&
+      isBefore(goalProgress.workStreak.lastStreakDate, startOfYesterday())
+    ) {
+      // reset the current streak to 0
+      // also update the last streak date
+      updateForGoalProgress['workStreak.current'] = 0;
+      updateForGoalProgress['workStreak.lastStreakDate'] =
+        new Date().toISOString();
+    }
+
+    // update goal progress todosDeadlines
+    // if the task completion time before the deadline
+    if (isBefore(new Date(), task.deadline)) {
+      // increment "todosDeadlines.met" by 1
+      addPathToIncOperatorOfUpdateObj(
+        updateForGoalProgress,
+        'todosDeadlines.met',
+        1
+      );
+    } else {
+      // increment "todosDeadlines.missed" by 1
+      addPathToIncOperatorOfUpdateObj(
+        updateForGoalProgress,
+        'todosDeadlines.missed',
+        1
+      );
+    }
   }
 
   // if taskUpdateData.newCompletedUnits found
@@ -248,9 +313,6 @@ const updateTaskById = async (
 
     // if new completed habit difficulty is different than prev completed difficulty
     if (prevCompletedDifficultyName !== newCompletedDifficultyName) {
-      // create an update for goal progress
-      const updateForGoalProgress: Record<string, unknown> = {};
-
       // if prevCompletedDifficultyName is found
       if (prevCompletedDifficultyName) {
         // construct the field name of goal progress
@@ -259,9 +321,17 @@ const updateTaskById = async (
         const fieldInHabitProgress = `${prevCompletedDifficultyName}Completion`;
 
         // decrement the field value by 1 in goal progress
-        updateForGoalProgress.$inc = { [fieldInGoalProgress]: -1 };
+        addPathToIncOperatorOfUpdateObj(
+          updateForGoalProgress,
+          fieldInGoalProgress,
+          -1
+        );
         // decrement the field value by 1 in habit progress
-        updateForHabitProgress.$inc = { [fieldInHabitProgress]: -1 };
+        addPathToIncOperatorOfUpdateObj(
+          updateForHabitProgress,
+          fieldInHabitProgress,
+          -1
+        );
       }
 
       // if newCompletedDifficultyName is found
@@ -272,32 +342,27 @@ const updateTaskById = async (
         const fieldInHabitProgress = `${newCompletedDifficultyName}Completion`;
 
         // and increment the field value by 1 in goal progress
-        updateForGoalProgress.$inc = {
-          // copy update for prevCompletedDifficultyName that is using $inc operator
-          ...(updateForGoalProgress.$inc || {}),
-          [fieldInGoalProgress]: 1,
-        };
+        addPathToIncOperatorOfUpdateObj(
+          updateForGoalProgress,
+          fieldInGoalProgress,
+          1
+        );
         // and increment the field value by 1 in habit progress
-        updateForHabitProgress.$inc = {
-          // copy update for prevCompletedDifficultyName that is using $inc operator
-          ...(updateForHabitProgress.$inc || {}),
-          [fieldInHabitProgress]: 1,
-        };
+        addPathToIncOperatorOfUpdateObj(
+          updateForHabitProgress,
+          fieldInHabitProgress,
+          1
+        );
       }
-
-      // update user task goal progress
-      await GoalProgress.findOneAndUpdate(
-        { goal: task.goal, user: task.user },
-        updateForGoalProgress
-      );
     }
 
     // add newCompletedUnits to totalUnitCompleted
-    updateForHabitProgress.$inc = {
-      // copy update using same $inc operator
-      ...(updateForHabitProgress.$inc || {}),
-      totalUnitCompleted: taskUpdateData.newCompletedUnits,
-    };
+    addPathToIncOperatorOfUpdateObj(
+      updateForHabitProgress,
+      'totalUnitCompleted',
+      taskUpdateData.newCompletedUnits
+    );
+
     // update user task habit progress
     await HabitProgress.findOneAndUpdate(
       {
@@ -305,6 +370,15 @@ const updateTaskById = async (
         user: task.user,
       },
       updateForHabitProgress
+    );
+  }
+
+  // if update available for goal progress
+  if (Object.keys(updateForGoalProgress).length) {
+    // update user task goal progress
+    await GoalProgress.findOneAndUpdate(
+      { goal: task.goal, user: task.user },
+      updateForGoalProgress
     );
   }
 

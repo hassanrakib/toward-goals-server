@@ -179,10 +179,9 @@ const goalProgressSchema = new Schema<IGoalProgress>(
         },
         lastStreakDate: {
           type: Date,
-          required: true,
         },
       },
-      default: { current: 0, lastStreakDate: null },
+      default: { current: 0 },
     },
     dayStats: {
       type: {

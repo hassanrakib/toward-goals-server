@@ -36,6 +36,23 @@ export const getCompletedHabitDifficultyName = (
   return completedDifficultyName;
 };
 
+// capitalize first letter
 export const capitalizeFirstLetter = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+// add path to increment $inc operator of an update object
+// to increment by specified value to the path
+export const addPathToIncOperatorOfUpdateObj = (
+  updateObj: Record<string, unknown> & { $inc?: Record<string, number> },
+  path: string,
+  value: number
+) => {
+  // copy if previously updateObj.$inc has paths or assign empty object
+  // it is necessary because you can't directly assign value to updateObj.$inc["path"]
+  // as updateObj.$inc can be undefined
+  updateObj.$inc = updateObj.$inc ?? {};
+
+  // add new path to $inc
+  updateObj.$inc[path] = value;
 };
