@@ -177,11 +177,12 @@ const goalProgressSchema = new Schema<IGoalProgress>(
             message: 'Current work streak must be an integer',
           },
         },
-        lastStreakDate: {
-          type: Date,
+        streakDates: {
+          type: [Date],
+          required: true,
         },
       },
-      default: { current: 0 },
+      default: { current: 0, streakDates: [] },
     },
     dayStats: {
       type: {
@@ -196,6 +197,7 @@ const goalProgressSchema = new Schema<IGoalProgress>(
         },
         skippedDays: {
           type: Number,
+          required: true,
           min: [0, 'Skipped days must be a non-negative number'],
           validate: {
             validator: Number.isInteger,

@@ -14,15 +14,22 @@ import {
   SubgoalProgress,
 } from '../progress/progress.model';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
-import { isBefore, isYesterday, startOfYesterday } from 'date-fns';
+import {
+  differenceInDays,
+  isBefore,
+  isToday,
+  startOfDay,
+  startOfYesterday,
+} from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
 import {
-  addPathToIncOperatorOfUpdateObj,
+  addPathToOperatorOfUpdateObj,
   capitalizeFirstLetter,
   getCompletedHabitDifficultyName,
   sanitizeTaskDescription,
 } from './task.util';
 import { IHabit } from '../habit/habit.interface';
+import { IGoal } from '../goal/goal.interface';
 
 const insertTimeSpanIntoDB = async (
   userUsername: string,
@@ -216,8 +223,6 @@ const updateTaskById = async (
   const updateForGoalProgress: Record<string, unknown> = {};
 
   // if taskUpdateData has isCompleted: true
-  // update goal progress workStreak.current & workStreak.lastStreakDate
-  // update goal progress todosDeadlines
   if (taskUpdateData.isCompleted) {
     // check at least mini version of the selected habit completed
     if (task.completedUnits! < task.habit.difficulties.mini) {
@@ -232,7 +237,8 @@ const updateTaskById = async (
       goal: task.goal,
       user: task.user,
     })
-      .select('workStreak')
+      .populate<{ goal: IGoal }>('goal', 'startDate')
+      .select(['goal', 'workStreak', 'dayStats'])
       .lean();
 
     // if no goalProgress found
@@ -240,48 +246,90 @@ const updateTaskById = async (
       throw new AppError(httpStatus.BAD_REQUEST, 'Something went wrong!');
     }
 
-    // if the last streak date is undefined (no task completed so far for the goal)
-    // if the last streak date is yesterday
+    // if streakDates empty []
+    // if last streak date is not today
     if (
-      !goalProgress.workStreak?.lastStreakDate ||
-      isYesterday(goalProgress.workStreak.lastStreakDate)
+      !goalProgress.workStreak?.streakDates.length ||
+      !isToday(
+        goalProgress.workStreak.streakDates[
+          goalProgress.workStreak.streakDates.length - 1
+        ]
+      )
     ) {
-      // increment the current streak by 1
-      addPathToIncOperatorOfUpdateObj(
+      // push today's date as the last streak date
+      addPathToOperatorOfUpdateObj(
         updateForGoalProgress,
-        'workStreak.current',
+        '$push',
+        'workStreak.streakDates',
+        new Date().toISOString()
+      );
+
+      // increment workedDays
+      addPathToOperatorOfUpdateObj(
+        updateForGoalProgress,
+        '$inc',
+        'dayStats.workedDays',
         1
       );
-      // also update the last streak date
-      updateForGoalProgress['workStreak.lastStreakDate'] =
-        new Date().toISOString();
-    }
 
-    // or if the last streak date is before yesterday
-    if (
-      goalProgress.workStreak?.lastStreakDate &&
-      isBefore(goalProgress.workStreak.lastStreakDate, startOfYesterday())
-    ) {
-      // reset the current streak to 0
-      // also update the last streak date
-      updateForGoalProgress['workStreak.current'] = 0;
-      updateForGoalProgress['workStreak.lastStreakDate'] =
-        new Date().toISOString();
+      // if streakDates [] or
+      // if last streak is before yesterday
+      if (
+        !goalProgress.workStreak?.streakDates.length ||
+        isBefore(
+          goalProgress.workStreak.streakDates[
+            goalProgress.workStreak.streakDates.length - 1
+          ],
+          startOfYesterday()
+        )
+      ) {
+        // reset the current streak to 1
+        updateForGoalProgress['workStreak.current'] = 1;
+
+        // add days to skipped days
+        // add 1, as differenceInDays doesn't include start date
+        const totalDaysFromGoalStartDateToYesterday =
+          differenceInDays(
+            startOfYesterday(),
+            startOfDay(goalProgress.goal.startDate)
+          ) + 1;
+
+        // if goal.startDate is today
+        // then, startOfDay(today) is greater than startOfYesterday()
+        // but when in differenceInDays(endDate, startDate) startDate is greater
+        // than endDate, the function returns negative value
+        if (totalDaysFromGoalStartDateToYesterday > 0) {
+          updateForGoalProgress['dayStats.skippedDays'] =
+            totalDaysFromGoalStartDateToYesterday -
+            // add 1 to worked days to include today
+            (goalProgress.dayStats!.workedDays + 1);
+        }
+      } else {
+        // increment current work streak
+        addPathToOperatorOfUpdateObj(
+          updateForGoalProgress,
+          '$inc',
+          'workStreak.current',
+          1
+        );
+      }
     }
 
     // update goal progress todosDeadlines
     // if the task completion time before the deadline
     if (isBefore(new Date(), task.deadline)) {
       // increment "todosDeadlines.met" by 1
-      addPathToIncOperatorOfUpdateObj(
+      addPathToOperatorOfUpdateObj(
         updateForGoalProgress,
+        '$inc',
         'todosDeadlines.met',
         1
       );
     } else {
       // increment "todosDeadlines.missed" by 1
-      addPathToIncOperatorOfUpdateObj(
+      addPathToOperatorOfUpdateObj(
         updateForGoalProgress,
+        '$inc',
         'todosDeadlines.missed',
         1
       );
@@ -321,14 +369,16 @@ const updateTaskById = async (
         const fieldInHabitProgress = `${prevCompletedDifficultyName}Completion`;
 
         // decrement the field value by 1 in goal progress
-        addPathToIncOperatorOfUpdateObj(
+        addPathToOperatorOfUpdateObj(
           updateForGoalProgress,
+          '$inc',
           fieldInGoalProgress,
           -1
         );
         // decrement the field value by 1 in habit progress
-        addPathToIncOperatorOfUpdateObj(
+        addPathToOperatorOfUpdateObj(
           updateForHabitProgress,
+          '$inc',
           fieldInHabitProgress,
           -1
         );
@@ -342,14 +392,16 @@ const updateTaskById = async (
         const fieldInHabitProgress = `${newCompletedDifficultyName}Completion`;
 
         // and increment the field value by 1 in goal progress
-        addPathToIncOperatorOfUpdateObj(
+        addPathToOperatorOfUpdateObj(
           updateForGoalProgress,
+          '$inc',
           fieldInGoalProgress,
           1
         );
         // and increment the field value by 1 in habit progress
-        addPathToIncOperatorOfUpdateObj(
+        addPathToOperatorOfUpdateObj(
           updateForHabitProgress,
+          '$inc',
           fieldInHabitProgress,
           1
         );
@@ -357,8 +409,9 @@ const updateTaskById = async (
     }
 
     // add newCompletedUnits to totalUnitCompleted
-    addPathToIncOperatorOfUpdateObj(
+    addPathToOperatorOfUpdateObj(
       updateForHabitProgress,
+      '$inc',
       'totalUnitCompleted',
       taskUpdateData.newCompletedUnits
     );
