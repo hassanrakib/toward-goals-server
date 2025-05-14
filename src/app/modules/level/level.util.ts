@@ -24,20 +24,23 @@ export const createRequirementsLevels = (): IRequirementLevel[] => {
   return requirementsLevels;
 };
 
-const getRequirementLevelId = async (
+const getRequirementLevel = async (
   requirementName: RequirementsName,
   level: number
 ) => {
   const requirementLevel = await RequirementLevel.findOne(
     { name: requirementName, level },
-    '_id'
+    '_id minPercentage'
   ).lean();
 
   if (!requirementLevel) {
     throw new Error('Error in getting requirementLevel');
   }
 
-  return requirementLevel._id;
+  return {
+    _id: requirementLevel._id,
+    minPercentage: requirementLevel.minPercentage,
+  };
 };
 
 export const createLevels = async () => {
@@ -62,15 +65,12 @@ export const createLevels = async () => {
       badgeImage: badgeImages[level],
       levelUpPoint: level * 10 + 10,
       requirements: {
-        consistency: await getRequirementLevelId(
+        consistency: await getRequirementLevel(
           RequirementsName.Consistency,
           level
         ),
-        deepFocus: await getRequirementLevelId(
-          RequirementsName.DeepFocus,
-          level
-        ),
-        commitment: await getRequirementLevelId(
+        deepFocus: await getRequirementLevel(RequirementsName.DeepFocus, level),
+        commitment: await getRequirementLevel(
           RequirementsName.Commitment,
           level
         ),

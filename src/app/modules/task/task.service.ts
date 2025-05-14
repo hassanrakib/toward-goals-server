@@ -19,17 +19,17 @@ import {
   isBefore,
   isToday,
   startOfDay,
+  startOfToday,
   startOfYesterday,
 } from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
-import {
-  addPathToOperatorOfUpdateObj,
-  capitalizeFirstLetter,
-  getCompletedHabitDifficultyName,
-  sanitizeTaskDescription,
-} from './task.util';
+import { sanitizeTaskDescription } from './task.util';
 import { IHabit } from '../habit/habit.interface';
 import { IGoal } from '../goal/goal.interface';
+import { getCompletedHabitDifficultyName } from '../habit/habit.util';
+import { capitalizeFirstLetter } from '../../utils/capitalize-first-letter';
+import { addPathToOperatorOfUpdateObj } from '../../utils/add-path-to-operator-of-update-obj';
+import { addAnalyticsUpdateToUpdateObj } from '../progress/progress.util';
 
 const insertTimeSpanIntoDB = async (
   userUsername: string,
@@ -238,13 +238,28 @@ const updateTaskById = async (
       user: task.user,
     })
       .populate<{ goal: IGoal }>('goal', 'startDate')
-      .select(['goal', 'workStreak', 'dayStats'])
       .lean();
 
     // if no goalProgress found
     if (!goalProgress) {
       throw new AppError(httpStatus.BAD_REQUEST, 'Something went wrong!');
     }
+
+    // determine if the deadline is met
+    // checking if the task completion time before the deadline
+    const isDeadlineMet = isBefore(new Date(), task.deadline);
+    // get total deadlines met for tasks
+    let totalDeadlinesMet = goalProgress.todosDeadlines!.met;
+    let totalDeadlinesMissed = goalProgress.todosDeadlines!.missed;
+    if (isDeadlineMet) {
+      totalDeadlinesMet += 1;
+    } else {
+      totalDeadlinesMissed += 1;
+    }
+
+    // update goal progress todosDeadlines
+    updateForGoalProgress['todosDeadlines.met'] = totalDeadlinesMet;
+    updateForGoalProgress['todosDeadlines.missed'] = totalDeadlinesMissed;
 
     // if streakDates empty []
     // if last streak date is not today
@@ -256,6 +271,12 @@ const updateTaskById = async (
         ]
       )
     ) {
+      // total worked days including today
+      const totalWorkedDays = goalProgress.workStreak!.streakDates.length + 1;
+      // initial total skipped days taken from goalProgress
+      // but it can change if streakDates [] or last streak is before yesterday
+      let totalSkippedDays = goalProgress.dayStats!.skippedDays;
+
       // push today's date as the last streak date
       addPathToOperatorOfUpdateObj(
         updateForGoalProgress,
@@ -264,13 +285,8 @@ const updateTaskById = async (
         new Date().toISOString()
       );
 
-      // increment workedDays
-      addPathToOperatorOfUpdateObj(
-        updateForGoalProgress,
-        '$inc',
-        'dayStats.workedDays',
-        1
-      );
+      // update workedDays
+      updateForGoalProgress['dayStats.workedDays'] = totalWorkedDays;
 
       // if streakDates [] or
       // if last streak is before yesterday
@@ -286,23 +302,19 @@ const updateTaskById = async (
         // reset the current streak to 1
         updateForGoalProgress['workStreak.current'] = 1;
 
-        // add days to skipped days
-        // add 1, as differenceInDays doesn't include start date
-        const totalDaysFromGoalStartDateToYesterday =
-          differenceInDays(
-            startOfYesterday(),
-            startOfDay(goalProgress.goal.startDate)
-          ) + 1;
+        // update skippedDays
+        // get total days passed from the goal start date to today
+        const totalDaysPassed = differenceInDays(
+          startOfToday(),
+          startOfDay(goalProgress.goal.startDate)
+        );
 
-        // if goal.startDate is today
-        // then, startOfDay(today) is greater than startOfYesterday()
-        // but when in differenceInDays(endDate, startDate) startDate is greater
-        // than endDate, the function returns negative value
-        if (totalDaysFromGoalStartDateToYesterday > 0) {
-          updateForGoalProgress['dayStats.skippedDays'] =
-            totalDaysFromGoalStartDateToYesterday -
-            // add 1 to worked days to include today
-            (goalProgress.dayStats!.workedDays + 1);
+        // if totalDaysPassed greater than 0,
+        // there is a possibility that the user didn't work in some days
+        if (totalDaysPassed > 0) {
+          totalSkippedDays = totalDaysPassed - totalWorkedDays;
+
+          updateForGoalProgress['dayStats.skippedDays'] = totalSkippedDays;
         }
       } else {
         // increment current work streak
@@ -313,25 +325,29 @@ const updateTaskById = async (
           1
         );
       }
-    }
 
-    // update goal progress todosDeadlines
-    // if the task completion time before the deadline
-    if (isBefore(new Date(), task.deadline)) {
-      // increment "todosDeadlines.met" by 1
-      addPathToOperatorOfUpdateObj(
+      // update goalProgress "analytics.consistency"
+      await addAnalyticsUpdateToUpdateObj(
         updateForGoalProgress,
-        '$inc',
-        'todosDeadlines.met',
-        1
+        totalWorkedDays,
+        totalSkippedDays,
+        'consistency'
       );
-    } else {
-      // increment "todosDeadlines.missed" by 1
-      addPathToOperatorOfUpdateObj(
+
+      // update goalProgress "analytics.commitment"
+      await addAnalyticsUpdateToUpdateObj(
         updateForGoalProgress,
-        '$inc',
-        'todosDeadlines.missed',
-        1
+        totalDeadlinesMet,
+        totalDeadlinesMissed,
+        'commitment'
+      );
+
+      // update goalProgress "analytics.deepFocus"
+      await addAnalyticsUpdateToUpdateObj(
+        updateForGoalProgress,
+        goalProgress.totalEliteCompletion!,
+        goalProgress.totalMiniCompletion! + goalProgress.totalPlusCompletion!,
+        'deepFocus'
       );
     }
   }
