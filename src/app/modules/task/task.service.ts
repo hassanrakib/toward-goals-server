@@ -29,7 +29,10 @@ import { IGoal } from '../goal/goal.interface';
 import { getCompletedHabitDifficultyName } from '../habit/habit.util';
 import { capitalizeFirstLetter } from '../../utils/capitalize-first-letter';
 import { addPathToOperatorOfUpdateObj } from '../../utils/add-path-to-operator-of-update-obj';
-import { addAnalyticsUpdateToUpdateObj } from '../progress/progress.util';
+import {
+  addAnalyticsUpdateToUpdateObj,
+  addLevelUpdateToUpdateObj,
+} from '../progress/progress.util';
 
 const insertTimeSpanIntoDB = async (
   userUsername: string,
@@ -327,27 +330,37 @@ const updateTaskById = async (
       }
 
       // update goalProgress "analytics.consistency"
-      await addAnalyticsUpdateToUpdateObj(
-        updateForGoalProgress,
-        totalWorkedDays,
-        totalSkippedDays,
-        'consistency'
-      );
+      const [achievedConsistencyPercentage] =
+        await addAnalyticsUpdateToUpdateObj(
+          updateForGoalProgress,
+          totalWorkedDays,
+          totalSkippedDays,
+          'consistency'
+        );
 
       // update goalProgress "analytics.commitment"
-      await addAnalyticsUpdateToUpdateObj(
-        updateForGoalProgress,
-        totalDeadlinesMet,
-        totalDeadlinesMissed,
-        'commitment'
-      );
+      const [achievedCommitmentPercentage] =
+        await addAnalyticsUpdateToUpdateObj(
+          updateForGoalProgress,
+          totalDeadlinesMet,
+          totalDeadlinesMissed,
+          'commitment'
+        );
 
       // update goalProgress "analytics.deepFocus"
-      await addAnalyticsUpdateToUpdateObj(
+      const [achievedDeepFocusPercentage] = await addAnalyticsUpdateToUpdateObj(
         updateForGoalProgress,
         goalProgress.totalEliteCompletion!,
         goalProgress.totalMiniCompletion! + goalProgress.totalPlusCompletion!,
         'deepFocus'
+      );
+
+      // update goalProgress "level"
+      await addLevelUpdateToUpdateObj(
+        updateForGoalProgress,
+        achievedConsistencyPercentage,
+        achievedCommitmentPercentage,
+        achievedDeepFocusPercentage
       );
     }
   }

@@ -202,9 +202,9 @@ const insertGoalProgressIntoDB = async (
     ...progress,
     level: mainLevel._id,
     analytics: {
-      consistency: { level: mainLevel.requirements.consistency },
-      commitment: { level: mainLevel.requirements.commitment },
-      deepFocus: { level: mainLevel.requirements.deepFocus },
+      consistency: { level: mainLevel.requirements.consistency._id },
+      commitment: { level: mainLevel.requirements.commitment._id },
+      deepFocus: { level: mainLevel.requirements.deepFocus._id },
     },
     user: userId,
   };
@@ -233,9 +233,9 @@ const fetchMyGoalsProgressFromDB = async (
     .populate({
       path: 'level',
       populate: [
-        { path: 'requirements.consistency' },
-        { path: 'requirements.deepFocus' },
-        { path: 'requirements.commitment' },
+        { path: 'requirements.consistency._id' },
+        { path: 'requirements.deepFocus._id' },
+        { path: 'requirements.commitment._id' },
       ],
     })
     .populate([

@@ -56,50 +56,53 @@ const requirementLevelSchema = new Schema<IRequirementLevel>({
   },
 });
 
-const levelRequirementsSchema = new Schema<LevelRequirements>({
-  consistency: {
-    type: {
-      _id: {
-        type: Schema.Types.ObjectId,
-        ref: 'RequirementLevel',
-        required: true,
+const levelRequirementsSchema = new Schema<LevelRequirements>(
+  {
+    consistency: {
+      type: {
+        _id: {
+          type: Schema.Types.ObjectId,
+          ref: 'RequirementLevel',
+          required: true,
+        },
+        minPercentage: {
+          type: Number,
+          required: [true, 'Minimum percentage is required'],
+        },
       },
-      minPercentage: {
-        type: Number,
-        required: [true, 'Minimum percentage is required'],
-      },
+      required: [true, 'Consistency requirement is required'],
     },
-    required: [true, 'Consistency requirement is required'],
-  },
-  deepFocus: {
-    type: {
-      _id: {
-        type: Schema.Types.ObjectId,
-        ref: 'RequirementLevel',
-        required: true,
+    deepFocus: {
+      type: {
+        _id: {
+          type: Schema.Types.ObjectId,
+          ref: 'RequirementLevel',
+          required: true,
+        },
+        minPercentage: {
+          type: Number,
+          required: [true, 'Minimum percentage is required'],
+        },
       },
-      minPercentage: {
-        type: Number,
-        required: [true, 'Minimum percentage is required'],
-      },
+      required: [true, 'Deep focus requirement is required'],
     },
-    required: [true, 'Deep focus requirement is required'],
-  },
-  commitment: {
-    type: {
-      _id: {
-        type: Schema.Types.ObjectId,
-        ref: 'RequirementLevel',
-        required: true,
+    commitment: {
+      type: {
+        _id: {
+          type: Schema.Types.ObjectId,
+          ref: 'RequirementLevel',
+          required: true,
+        },
+        minPercentage: {
+          type: Number,
+          required: [true, 'Minimum percentage is required'],
+        },
       },
-      minPercentage: {
-        type: Number,
-        required: [true, 'Minimum percentage is required'],
-      },
+      required: [true, 'Commitment requirement is required'],
     },
-    required: [true, 'Commitment requirement is required'],
   },
-});
+  { _id: false }
+);
 
 const levelSchema = new Schema<ILevel>({
   level: {
