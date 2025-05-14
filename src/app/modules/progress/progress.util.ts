@@ -23,7 +23,9 @@ export const addAnalyticsUpdateToUpdateObj = async (
           analyticsFieldName
         ) as keyof typeof RequirementsName
       ],
-      minPercentage: { $gte: percentageOfSuccess },
+      // percentageOfSuccess must fall withing the range of minPercentage & maxPercentage
+      minPercentage: { $lte: percentageOfSuccess },
+      maxPercentage: { $gte: percentageOfSuccess },
     },
     '_id'
   ).lean();
@@ -42,18 +44,52 @@ export const addLevelUpdateToUpdateObj = async (
   achievedCommitmentPercentage: number,
   achievedDeepFocusPercentage: number
 ) => {
+  // the minimum successful analytics of different analytics
+  let minimumSuccessfulAnalytics: {
+    fieldNameInLevelRequirements: string;
+    percentage: number;
+  };
+
+  // update minimumSuccessfulAnalytics based on minimum achieved percentage
+  switch (
+    Math.min(
+      achievedConsistencyPercentage,
+      achievedCommitmentPercentage,
+      achievedDeepFocusPercentage
+    )
+  ) {
+    case achievedConsistencyPercentage:
+      minimumSuccessfulAnalytics = {
+        fieldNameInLevelRequirements: 'consistency',
+        percentage: achievedConsistencyPercentage,
+      };
+      break;
+    case achievedCommitmentPercentage:
+      minimumSuccessfulAnalytics = {
+        fieldNameInLevelRequirements: 'commitment',
+        percentage: achievedCommitmentPercentage,
+      };
+      break;
+    default:
+      minimumSuccessfulAnalytics = {
+        fieldNameInLevelRequirements: 'deepFocus',
+        percentage: achievedDeepFocusPercentage,
+      };
+  }
+
   // get the new level to update goalProgress
   const newLevel = await Level.findOne(
+    // matching minimumSuccessfulAnalytics percentage in the range of
+    // level.requirements metric's minPercentage & maxPercentage
     {
-      'requirements.consistency.minPercentage': {
-        $gte: achievedConsistencyPercentage,
-      },
-      'requirements.commitment.minPercentage': {
-        $gte: achievedCommitmentPercentage,
-      },
-      'requirements.deepFocus.minPercentage': {
-        $gte: achievedDeepFocusPercentage,
-      },
+      [`requirements.${minimumSuccessfulAnalytics.fieldNameInLevelRequirements}.minPercentage`]:
+        {
+          $lte: minimumSuccessfulAnalytics.percentage,
+        },
+      [`requirements.${minimumSuccessfulAnalytics.fieldNameInLevelRequirements}.maxPercentage`]:
+        {
+          $gte: minimumSuccessfulAnalytics.percentage,
+        },
     },
     '_id'
   ).lean();

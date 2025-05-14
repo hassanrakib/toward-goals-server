@@ -230,14 +230,7 @@ const fetchMyGoalsProgressFromDB = async (
 
   const goalsProgress = await goalsProgressQuery.modelQuery
     .populate('goal')
-    .populate({
-      path: 'level',
-      populate: [
-        { path: 'requirements.consistency._id' },
-        { path: 'requirements.deepFocus._id' },
-        { path: 'requirements.commitment._id' },
-      ],
-    })
+    .populate('level')
     .populate([
       { path: 'analytics.consistency.level' },
       { path: 'analytics.deepFocus.level' },

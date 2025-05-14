@@ -19,18 +19,9 @@ export interface ILevel {
   badgeImage: string;
   levelUpPoint: number;
   requirements: {
-    consistency: {
-      _id: Types.ObjectId;
-      minPercentage: number;
-    };
-    deepFocus: {
-      _id: Types.ObjectId;
-      minPercentage: number;
-    };
-    commitment: {
-      _id: Types.ObjectId;
-      minPercentage: number;
-    };
+    consistency: IRequirementLevel & { _id: Types.ObjectId };
+    deepFocus: IRequirementLevel & { _id: Types.ObjectId };
+    commitment: IRequirementLevel & { _id: Types.ObjectId };
   };
 }
 

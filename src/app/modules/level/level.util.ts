@@ -28,19 +28,16 @@ const getRequirementLevel = async (
   requirementName: RequirementsName,
   level: number
 ) => {
-  const requirementLevel = await RequirementLevel.findOne(
-    { name: requirementName, level },
-    '_id minPercentage'
-  ).lean();
+  const requirementLevel = await RequirementLevel.findOne({
+    name: requirementName,
+    level,
+  }).lean();
 
   if (!requirementLevel) {
     throw new Error('Error in getting requirementLevel');
   }
 
-  return {
-    _id: requirementLevel._id,
-    minPercentage: requirementLevel.minPercentage,
-  };
+  return requirementLevel;
 };
 
 export const createLevels = async () => {
