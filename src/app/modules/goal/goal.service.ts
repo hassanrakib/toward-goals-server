@@ -39,7 +39,7 @@ const insertGoalIntoDB = async (
     image: insertedGoal.image,
     userCount: insertedGoal.users.length,
     userLimit: insertedGoal.userLimit,
-    startDate: insertedGoal.startDate,
+    startDate: insertedGoal.startDate.getTime(),
     duration: insertedGoal.duration,
   };
 

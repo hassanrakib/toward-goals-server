@@ -33,6 +33,7 @@ import {
   addAnalyticsUpdateToUpdateObj,
   addLevelUpdateToUpdateObj,
 } from '../progress/progress.util';
+import { calculatePercentage } from '../../utils/calculate-percentage';
 
 const insertTimeSpanIntoDB = async (
   userUsername: string,
@@ -126,19 +127,21 @@ const insertTaskIntoDB = async (
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not into the habit');
   }
 
-  // make sure all other tasks for this goal, subgoal & habit are complete
+  // make sure all other tasks for this goal are complete
   const incompleteTask = await Task.findOne(
     {
       goal: task.goal,
-      subgoal: task.subgoal,
-      habit: task.habit,
+      user: userId,
       isCompleted: false,
     },
     '_id'
   ).lean();
 
   if (incompleteTask) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'You have a task incomplete');
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'You have a task incomplete for the goal'
+    );
   }
   // new task
   const newTask: ITask = {
@@ -222,9 +225,6 @@ const updateTaskById = async (
     throw new AppError(httpStatus.NOT_FOUND, 'Task is not found!');
   }
 
-  // create an update for goal progress
-  const updateForGoalProgress: Record<string, unknown> = {};
-
   // if taskUpdateData has isCompleted: true
   if (taskUpdateData.isCompleted) {
     // check at least mini version of the selected habit completed
@@ -248,6 +248,68 @@ const updateTaskById = async (
       throw new AppError(httpStatus.BAD_REQUEST, 'Something went wrong!');
     }
 
+    // create an update for goal progress
+    const updateForGoalProgress: Record<string, unknown> = {};
+    // create an update for habit progress
+    const updateForHabitProgress: Record<string, unknown> = {};
+
+    // update goalProgress => totalMiniCompletion, totalPlusCompletion, totalEliteCompletion
+    // update habitProgress => miniCompletion, plusCompletion, eliteCompletion, totalUnitCompleted
+
+    // these variables are updated below based on completed difficulty name
+    // and used to update goalProgress "analytics.deepFocus"
+    let goalProgressTotalMiniCompletion = goalProgress.totalMiniCompletion!;
+    let goalProgressTotalPlusCompletion = goalProgress.totalPlusCompletion!;
+    let goalProgressTotalEliteCompletion = goalProgress.totalEliteCompletion!;
+
+    // get completed difficulty name => "mini", "plus", "elite"
+    // we are sure that completedDificultyName will not be undefined
+    // because we already checked that task.completedUnits is not less than task.habit.difficulties.mini
+    const completedDifficultyName = getCompletedHabitDifficultyName(
+      task.habit.difficulties,
+      task.completedUnits!
+    )!;
+
+    // update variables above goalProgressTotalXCompletion
+    switch (completedDifficultyName) {
+      case 'mini':
+        goalProgressTotalMiniCompletion += 1;
+        break;
+      case 'plus':
+        goalProgressTotalPlusCompletion += 1;
+        break;
+      case 'elite':
+        goalProgressTotalEliteCompletion += 1;
+    }
+
+    // construct the field name of goal progress
+    const fieldInGoalProgress = `total${capitalizeFirstLetter(completedDifficultyName)}Completion`;
+    // construct the field name of habit progress
+    const fieldInHabitProgress = `${completedDifficultyName}Completion`;
+
+    // and increment the field value by 1 in goal progress
+    addPathToOperatorOfUpdateObj(
+      updateForGoalProgress,
+      '$inc',
+      fieldInGoalProgress,
+      1
+    );
+    // and increment the field value by 1 in habit progress
+    addPathToOperatorOfUpdateObj(
+      updateForHabitProgress,
+      '$inc',
+      fieldInHabitProgress,
+      1
+    );
+
+    // add task.completedUnits to totalUnitCompleted field of habit progress
+    addPathToOperatorOfUpdateObj(
+      updateForHabitProgress,
+      '$inc',
+      'totalUnitCompleted',
+      task.completedUnits
+    );
+
     // determine if the deadline is met
     // checking if the task completion time before the deadline
     const isDeadlineMet = isBefore(new Date(), task.deadline);
@@ -264,6 +326,22 @@ const updateTaskById = async (
     updateForGoalProgress['todosDeadlines.met'] = totalDeadlinesMet;
     updateForGoalProgress['todosDeadlines.missed'] = totalDeadlinesMissed;
 
+    // get total worked days
+    // which is updated if streakDates empty [] or last streak date is not today
+    let totalWorkedDays = goalProgress.workStreak!.streakDates.length;
+
+    // get total skipped days
+    // which is updated if streakDates empty [] or last streak date is before yesterday
+    let totalSkippedDays = goalProgress.dayStats!.skippedDays;
+
+    // the variable is used outside the condition below
+    // but updated inside the condition
+    // percentage of total worked days against totalWorkedDays + totalSkippedDays
+    let achievedConsistencyPercentage = calculatePercentage(
+      totalWorkedDays,
+      totalWorkedDays + totalSkippedDays
+    );
+
     // if streakDates empty []
     // if last streak date is not today
     if (
@@ -274,11 +352,11 @@ const updateTaskById = async (
         ]
       )
     ) {
-      // total worked days including today
-      const totalWorkedDays = goalProgress.workStreak!.streakDates.length + 1;
-      // initial total skipped days taken from goalProgress
-      // but it can change if streakDates [] or last streak is before yesterday
-      let totalSkippedDays = goalProgress.dayStats!.skippedDays;
+      // update total worked days to include today
+      totalWorkedDays += 1;
+
+      // update workedDays
+      updateForGoalProgress['dayStats.workedDays'] = totalWorkedDays;
 
       // push today's date as the last streak date
       addPathToOperatorOfUpdateObj(
@@ -287,9 +365,6 @@ const updateTaskById = async (
         'workStreak.streakDates',
         new Date().toISOString()
       );
-
-      // update workedDays
-      updateForGoalProgress['dayStats.workedDays'] = totalWorkedDays;
 
       // if streakDates [] or
       // if last streak is before yesterday
@@ -321,6 +396,7 @@ const updateTaskById = async (
         }
       } else {
         // increment current work streak
+        // as last streak date is yesterday
         addPathToOperatorOfUpdateObj(
           updateForGoalProgress,
           '$inc',
@@ -330,122 +406,47 @@ const updateTaskById = async (
       }
 
       // update goalProgress "analytics.consistency"
-      const [achievedConsistencyPercentage] =
-        await addAnalyticsUpdateToUpdateObj(
-          updateForGoalProgress,
-          totalWorkedDays,
-          totalSkippedDays,
-          'consistency'
-        );
-
-      // update goalProgress "analytics.commitment"
-      const [achievedCommitmentPercentage] =
-        await addAnalyticsUpdateToUpdateObj(
-          updateForGoalProgress,
-          totalDeadlinesMet,
-          totalDeadlinesMissed,
-          'commitment'
-        );
-
-      // update goalProgress "analytics.deepFocus"
-      const [achievedDeepFocusPercentage] = await addAnalyticsUpdateToUpdateObj(
+      // inside the condition because
+      // the function is dependent on totalWorkedDays & totalSkippedDays
+      // and totalWorkedDays, totalSkippedDays changes inside the condition
+      const [newAchievedConsistency] = await addAnalyticsUpdateToUpdateObj(
         updateForGoalProgress,
-        goalProgress.totalEliteCompletion!,
-        goalProgress.totalMiniCompletion! + goalProgress.totalPlusCompletion!,
-        'deepFocus'
+        totalWorkedDays,
+        totalSkippedDays,
+        'consistency'
       );
 
-      // update goalProgress "level"
-      await addLevelUpdateToUpdateObj(
-        updateForGoalProgress,
-        achievedConsistencyPercentage,
-        achievedCommitmentPercentage,
-        achievedDeepFocusPercentage
-      );
-    }
-  }
-
-  // if taskUpdateData.newCompletedUnits found
-  // then also it has to be greater than 0, because 0 is falsy
-  let totalCompletedUnits: number | undefined;
-  if (taskUpdateData.newCompletedUnits) {
-    // calculate total completed units
-    totalCompletedUnits =
-      task.completedUnits! + taskUpdateData.newCompletedUnits;
-
-    // get the previous completed difficulty
-    const prevCompletedDifficultyName = getCompletedHabitDifficultyName(
-      task.habit.difficulties,
-      task.completedUnits!
-    );
-
-    // currently completed difficulty name
-    const newCompletedDifficultyName = getCompletedHabitDifficultyName(
-      task.habit.difficulties,
-      totalCompletedUnits
-    );
-
-    // create an update for habit progress
-    const updateForHabitProgress: Record<string, unknown> = {};
-
-    // if new completed habit difficulty is different than prev completed difficulty
-    if (prevCompletedDifficultyName !== newCompletedDifficultyName) {
-      // if prevCompletedDifficultyName is found
-      if (prevCompletedDifficultyName) {
-        // construct the field name of goal progress
-        const fieldInGoalProgress = `total${capitalizeFirstLetter(prevCompletedDifficultyName)}Completion`;
-        // construct the field name of habit progress
-        const fieldInHabitProgress = `${prevCompletedDifficultyName}Completion`;
-
-        // decrement the field value by 1 in goal progress
-        addPathToOperatorOfUpdateObj(
-          updateForGoalProgress,
-          '$inc',
-          fieldInGoalProgress,
-          -1
-        );
-        // decrement the field value by 1 in habit progress
-        addPathToOperatorOfUpdateObj(
-          updateForHabitProgress,
-          '$inc',
-          fieldInHabitProgress,
-          -1
-        );
-      }
-
-      // if newCompletedDifficultyName is found
-      if (newCompletedDifficultyName) {
-        // construct the field name of goal progress
-        const fieldInGoalProgress = `total${capitalizeFirstLetter(newCompletedDifficultyName)}Completion`;
-        // construct the field name of habit progress
-        const fieldInHabitProgress = `${newCompletedDifficultyName}Completion`;
-
-        // and increment the field value by 1 in goal progress
-        addPathToOperatorOfUpdateObj(
-          updateForGoalProgress,
-          '$inc',
-          fieldInGoalProgress,
-          1
-        );
-        // and increment the field value by 1 in habit progress
-        addPathToOperatorOfUpdateObj(
-          updateForHabitProgress,
-          '$inc',
-          fieldInHabitProgress,
-          1
-        );
-      }
+      // update achievedConsistencyPercentage
+      achievedConsistencyPercentage = newAchievedConsistency;
     }
 
-    // add newCompletedUnits to totalUnitCompleted
-    addPathToOperatorOfUpdateObj(
-      updateForHabitProgress,
-      '$inc',
-      'totalUnitCompleted',
-      taskUpdateData.newCompletedUnits
+    // update goalProgress "analytics.commitment"
+    const [achievedCommitmentPercentage] = await addAnalyticsUpdateToUpdateObj(
+      updateForGoalProgress,
+      totalDeadlinesMet,
+      totalDeadlinesMissed,
+      'commitment'
     );
 
-    // update user task habit progress
+    // update goalProgress "analytics.deepFocus"
+    const [achievedDeepFocusPercentage] = await addAnalyticsUpdateToUpdateObj(
+      updateForGoalProgress,
+      goalProgressTotalPlusCompletion + goalProgressTotalEliteCompletion,
+      goalProgressTotalMiniCompletion,
+      'deepFocus'
+    );
+
+    // update goalProgress "level"
+    await addLevelUpdateToUpdateObj(
+      updateForGoalProgress,
+      achievedConsistencyPercentage,
+      achievedCommitmentPercentage,
+      achievedDeepFocusPercentage
+    );
+
+    // finally do the update operations
+
+    // update task's habit progress
     await HabitProgress.findOneAndUpdate(
       {
         habit: task.habit,
@@ -453,11 +454,8 @@ const updateTaskById = async (
       },
       updateForHabitProgress
     );
-  }
 
-  // if update available for goal progress
-  if (Object.keys(updateForGoalProgress).length) {
-    // update user task goal progress
+    // update task's goal progress
     await GoalProgress.findOneAndUpdate(
       { goal: task.goal, user: task.user },
       updateForGoalProgress
@@ -466,10 +464,8 @@ const updateTaskById = async (
 
   // update to the task
   const update = {
-    // if any of the fields value is undefined
-    // mongoose will opt that field out of the update operation
-    isCompleted: taskUpdateData.isCompleted,
-    completedUnits: totalCompletedUnits,
+    isCompleted: taskUpdateData.isCompleted ?? false,
+    completedUnits: { $inc: taskUpdateData.newCompletedUnits ?? 0 },
   };
 
   const result = await Task.findByIdAndUpdate(taskId, update, {

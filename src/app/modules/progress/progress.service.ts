@@ -229,6 +229,7 @@ const fetchMyGoalsProgressFromDB = async (
     .paginate();
 
   const goalsProgress = await goalsProgressQuery.modelQuery
+    .populate('user')
     .populate('goal')
     .populate('level')
     .populate([
