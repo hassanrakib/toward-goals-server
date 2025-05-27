@@ -146,7 +146,28 @@ const insertHabitIntoDB = async (
   return insertedHabit;
 };
 
+const fetchHabitsOfAGoal = async (goalId: string, userUsername: string) => {
+  // get the user _id to use it in the goal progress query
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
+  // check if the user is really into the goal
+  const progress = await GoalProgress.findOne(
+    { goal: goalId, user: userId },
+    '_id'
+  ).lean();
+
+  if (!progress) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this goal');
+  }
+
+  return HabitProgress.find(
+    { user: userId, goal: goalId },
+    '_id habit'
+  ).populate('habit');
+};
+
 export const habitServices = {
   insertHabitUnitIntoDB,
   insertHabitIntoDB,
+  fetchHabitsOfAGoal,
 };

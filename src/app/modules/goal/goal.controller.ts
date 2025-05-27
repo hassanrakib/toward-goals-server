@@ -26,6 +26,22 @@ const createGoal = catchAsync(
   }
 );
 
+// get user specific joined goals
+const getMyJoinedGoals = catchAsync(async (req, res) => {
+  const joinedGoals = await goalServices.fetchMyJoinedGoals(
+    req.user.username,
+    req.query
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'My joined goals are retrieved successfully',
+    data: joinedGoals,
+  });
+});
+
 export const goalControllers = {
   createGoal,
+  getMyJoinedGoals,
 };

@@ -13,4 +13,6 @@ router.post(
   subgoalControllers.createSubgoal
 );
 
+router.get('/:goalId', auth(), subgoalControllers.getSubgoalsOfAGoal);
+
 export const subgoalRoutes = router;

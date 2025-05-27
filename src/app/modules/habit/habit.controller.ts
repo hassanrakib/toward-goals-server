@@ -39,7 +39,24 @@ const createHabit = catchAsync(
   }
 );
 
+const getHabitsOfAGoal = catchAsync(
+  async (req: Request<{ goalId?: string }>, res) => {
+    const habits = await habitServices.fetchHabitsOfAGoal(
+      req.params.goalId!,
+      req.user.username
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Habits are retrieved successful',
+      data: habits,
+    });
+  }
+);
+
 export const habitControllers = {
   createHabitUnit,
   createHabit,
+  getHabitsOfAGoal,
 };

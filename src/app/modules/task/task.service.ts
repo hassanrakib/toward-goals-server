@@ -16,8 +16,10 @@ import {
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 import {
   differenceInDays,
+  endOfToday,
   isBefore,
   isToday,
+  startOfToday,
   startOfYesterday,
 } from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
@@ -123,6 +125,23 @@ const insertTaskIntoDB = async (
 
   if (!habitProgress) {
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not into the habit');
+  }
+
+  // make sure only one task created per day for a goal
+  const taskCreatedToday = await Task.findOne(
+    {
+      goal: task.goal,
+      user: userId,
+      createdAt: { $gte: startOfToday(), $lte: endOfToday() },
+    },
+    '_id'
+  ).lean();
+
+  if (taskCreatedToday) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'A task is already created for today'
+    );
   }
 
   // make sure all other tasks for this goal are complete
@@ -380,18 +399,14 @@ const updateTaskById = async (
 
         // update skippedDays
         // get total days passed from the goal start date to now
-        const totalDaysPassed = differenceInDays(
-          new Date(),
-          goalProgress.goal.startDate
-        );
+        // include today
+        const totalDaysPassedIncludingToday =
+          differenceInDays(new Date(), goalProgress.goal.startDate) + 1;
 
-        // if totalDaysPassed greater than 0,
-        // there is a possibility that the user didn't work in some days
-        if (totalDaysPassed > 0) {
-          totalSkippedDays = totalDaysPassed - totalWorkedDays;
+        // update totalSkippedDays variable
+        totalSkippedDays = totalDaysPassedIncludingToday - totalWorkedDays;
 
-          updateForGoalProgress['dayStats.skippedDays'] = totalSkippedDays;
-        }
+        updateForGoalProgress['dayStats.skippedDays'] = totalSkippedDays;
       } else {
         // increment current work streak
         // as last streak date is yesterday

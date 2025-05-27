@@ -20,4 +20,6 @@ router.post(
   habitControllers.createHabit
 );
 
+router.get('/:goalId', auth(), habitControllers.getHabitsOfAGoal);
+
 export const habitRoutes = router;

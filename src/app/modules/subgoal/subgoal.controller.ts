@@ -22,6 +22,24 @@ const createSubgoal = catchAsync(
   }
 );
 
+const getSubgoalsOfAGoal = catchAsync(
+  async (req: Request<{ goalId?: string }>, res) => {
+    const subgoals = await subgoalServices.fetchSubgoalsOfAGoal(
+      req.params.goalId!,
+      req.user.username,
+      req.query
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Subgoals are retrieved successful',
+      data: subgoals,
+    });
+  }
+);
+
 export const subgoalControllers = {
   createSubgoal,
+  getSubgoalsOfAGoal,
 };

@@ -15,4 +15,6 @@ router.post(
   goalControllers.createGoal
 );
 
+router.get('/my-joined-goals', auth(), goalControllers.getMyJoinedGoals);
+
 export const goalRoutes = router;

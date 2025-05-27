@@ -97,6 +97,31 @@ const insertSubgoalIntoDB = async (
   return insertedSubgoal;
 };
 
+const fetchSubgoalsOfAGoal = async (
+  goalId: string,
+  userUsername: string,
+  query: { isCompleted?: boolean }
+) => {
+  // get the user _id to use it in the goal progress query
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
+  // check if the user is really into the goal
+  const progress = await GoalProgress.findOne(
+    { goal: goalId, user: userId },
+    '_id'
+  ).lean();
+
+  if (!progress) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this goal');
+  }
+
+  return SubgoalProgress.find(
+    { goal: goalId, ...query, user: userId },
+    '_id subgoal'
+  ).populate('subgoal');
+};
+
 export const subgoalServices = {
   insertSubgoalIntoDB,
+  fetchSubgoalsOfAGoal,
 };

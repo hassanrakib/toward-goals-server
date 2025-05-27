@@ -1,5 +1,6 @@
 import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
+import { GoalProgress } from '../progress/progress.model';
 import { User } from '../user/user.model';
 import { IGoal, GoalCreationData } from './goal.interface';
 import { Goal } from './goal.model';
@@ -48,6 +49,24 @@ const insertGoalIntoDB = async (
   return insertedGoal;
 };
 
+const fetchMyJoinedGoals = async (
+  userUsername: string,
+  query: { isCompleted?: boolean }
+) => {
+  // get the user _id to use it in the query
+  const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
+  // get the joined goals from goalprogresses collection
+  // just get the goal field using projection from goal progress
+  const joinedGoals = GoalProgress.find(
+    { ...query, user: userId },
+    '_id goal'
+  ).populate('goal');
+
+  return joinedGoals;
+};
+
 export const goalServices = {
   insertGoalIntoDB,
+  fetchMyJoinedGoals,
 };
