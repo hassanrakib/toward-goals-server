@@ -18,8 +18,6 @@ import {
   differenceInDays,
   isBefore,
   isToday,
-  startOfDay,
-  startOfToday,
   startOfYesterday,
 } from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
@@ -282,9 +280,9 @@ const updateTaskById = async (
         goalProgressTotalEliteCompletion += 1;
     }
 
-    // construct the field name of goal progress
+    // construct the field name to update in goal progress
     const fieldInGoalProgress = `total${capitalizeFirstLetter(completedDifficultyName)}Completion`;
-    // construct the field name of habit progress
+    // construct the field name to update in habit progress
     const fieldInHabitProgress = `${completedDifficultyName}Completion`;
 
     // and increment the field value by 1 in goal progress
@@ -381,10 +379,10 @@ const updateTaskById = async (
         updateForGoalProgress['workStreak.current'] = 1;
 
         // update skippedDays
-        // get total days passed from the goal start date to today
+        // get total days passed from the goal start date to now
         const totalDaysPassed = differenceInDays(
-          startOfToday(),
-          startOfDay(goalProgress.goal.startDate)
+          new Date(),
+          goalProgress.goal.startDate
         );
 
         // if totalDaysPassed greater than 0,
@@ -465,7 +463,7 @@ const updateTaskById = async (
   // update to the task
   const update = {
     isCompleted: taskUpdateData.isCompleted ?? false,
-    completedUnits: { $inc: taskUpdateData.newCompletedUnits ?? 0 },
+    $inc: { completedUnits: taskUpdateData.newCompletedUnits ?? 0 },
   };
 
   const result = await Task.findByIdAndUpdate(taskId, update, {
