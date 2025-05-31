@@ -50,7 +50,10 @@ export const decrypt = (
   });
 };
 
-export const createSession = async (payload: ISessionPayload, res: Response) => {
+export const createSession = async (
+  payload: ISessionPayload,
+  res: Response
+) => {
   const expiresIn = Number(config.session_expires_in!);
 
   const session = await encrypt(payload, expiresIn);

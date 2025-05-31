@@ -163,7 +163,12 @@ const fetchHabitsOfAGoal = async (goalId: string, userUsername: string) => {
   return HabitProgress.find(
     { user: userId, goal: goalId },
     '_id habit'
-  ).populate('habit');
+  ).populate({
+    path: 'habit',
+    populate: {
+      path: 'unit',
+    },
+  });
 };
 
 export const habitServices = {
