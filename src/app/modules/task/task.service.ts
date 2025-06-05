@@ -242,6 +242,11 @@ const updateTaskById = async (
     throw new AppError(httpStatus.NOT_FOUND, 'Task is not found!');
   }
 
+  // if task is already completed, throw an error
+  if (task.isCompleted) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Task is already completed');
+  }
+
   // if taskUpdateData has isCompleted: true
   if (taskUpdateData.isCompleted) {
     // check at least mini version of the selected habit completed

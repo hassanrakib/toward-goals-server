@@ -5,6 +5,7 @@ import { router } from './app/routes';
 import notFound from './app/middlewares/not-found';
 import httpStatus from 'http-status';
 import errorHandler from './app/middlewares/error-handler';
+import config from './app/config';
 
 // express app instance
 const app = express();
@@ -12,7 +13,12 @@ const app = express();
 // application level middlewares that execute for every type of http request
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(
+  cors({
+    origin: config.cors_origin!,
+    credentials: true,
+  })
+);
 
 // root route
 app.get('/', (req, res) => {
