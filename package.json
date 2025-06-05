@@ -2,11 +2,11 @@
   "name": "toward-goals-server",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "tsnd --respawn src/server.ts",
-    "build": "pnpx tsc",
+    "build": "tsc",
     "script": "tsnd --respawn src/app/scripts",
     "lint": "pnpx eslint src/**",
     "lint-fix": "pnpx eslint --fix src/**",
