@@ -62,6 +62,7 @@ export const createSession = async (
   res.cookie('session', session, {
     secure: config.NODE_ENV === 'production',
     httpOnly: true,
+    sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
     // cookie's maxAge must be 5 minute (300000ms) less
     // than session's expiration time
     // as we don't want to keep expired session in the cookie
