@@ -69,6 +69,6 @@ export const createSession = async (
     // session expiration time is in seconds
     // but maxAge needs to be in milliseconds
     maxAge: expiresIn * 1000 - 300000,
-    domain: '.onrender.com',
+    domain: 'https://tgo-6yww.onrender.com',
   });
 };
