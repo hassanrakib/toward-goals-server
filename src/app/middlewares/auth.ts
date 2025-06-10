@@ -8,7 +8,7 @@ import { User } from '../modules/user/user.model';
 const auth = () => {
   return catchAsync(async (req, res, next) => {
     // Step 1: Get session and check session existence
-    const { session } = req.cookies as Record<string, string>;
+    const session = req.headers.authorization?.split(' ')[1];
 
     if (!session) {
       throw new AppError(

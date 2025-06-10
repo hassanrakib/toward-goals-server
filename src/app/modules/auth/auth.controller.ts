@@ -12,13 +12,13 @@ const logIn = catchAsync(
     const payload = await authServices.authenticateUser(req.body);
 
     // create session and set it to the cookie
-    await createSession(payload, res);
+    const session = await createSession(payload, res);
 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
       message: 'User login successful',
-      data: payload,
+      data: { session },
     });
   }
 );
