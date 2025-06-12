@@ -14,7 +14,12 @@ import { HabitProgress, GoalProgress, SubgoalProgress } from './progress.model';
 import { Goal } from '../goal/goal.model';
 import { Habit } from '../habit/habit.model';
 import { Level } from '../level/level.model';
-import { addDays, isAfter, isBefore } from 'date-fns';
+import {
+  addDays,
+  differenceInDays,
+  differenceInMinutes,
+  isAfter,
+} from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
 
 const insertSubgoalProgressIntoDB = async (
@@ -46,16 +51,16 @@ const insertSubgoalProgressIntoDB = async (
 
   // don't allow creating subgoalProgress when progress for the goal is not found
   // also, don't allow if the goal progress tells that the user already completed the goal
-  const progress = await GoalProgress.findOne(
+  const goalProgress = await GoalProgress.findOne(
     { goal: goal._id, user: userId },
     '_id isCompleted'
   ).lean();
 
-  if (!progress) {
+  if (!goalProgress) {
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this goal');
   }
 
-  if (progress.isCompleted) {
+  if (goalProgress.isCompleted) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'You have already completed the goal'
@@ -75,18 +80,34 @@ const insertSubgoalProgressIntoDB = async (
     );
   }
 
-  // subgoalProgress can only be created after the goal's startDate
-  if (isBefore(new Date(), goal.startDate)) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Goal is not yet started');
-  }
-
-  // subgoal duration can not exceed the goal end date
+  // get the goal end date
   const goalEndDate = addDays(goal.startDate, goal.duration);
-  const subgoalEndDate = addDays(new Date(), subgoal.duration);
-  if (isAfter(subgoalEndDate, goalEndDate)) {
+
+  // get the full days to end the goal
+  const daysToEndGoal = differenceInDays(goalEndDate, new Date());
+
+  // get the remaining minutes after daysToEndGoal
+  const remainingMinutesAfterDaysToEndGoal =
+    differenceInMinutes(goalEndDate, new Date()) % (24 * 60);
+
+  // if days to end goal is less than 1 day also less than 30 minutes
+  if (daysToEndGoal < 1 && remainingMinutesAfterDaysToEndGoal < 30) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'Subgoal duration can not exceed the goal end date'
+      "Don't have time to pursue the goal"
+    );
+  }
+
+  // calculate max allowed subgoal duration
+  // full days to end goal + if remainingMinutesAfterDaysToEndGoal is greater than 30, add 1 more day
+  const maxSubgoalDuration =
+    daysToEndGoal + remainingMinutesAfterDaysToEndGoal >= 30 ? 1 : 0;
+
+  // subgoal duration can not exceed the max subgoal duration
+  if (subgoal.duration > maxSubgoalDuration) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Subgoal duration can not exceed ${String(maxSubgoalDuration)} days`
     );
   }
 
@@ -110,6 +131,27 @@ const insertHabitProgressIntoDB = async (
 
   if (!habit) {
     throw new AppError(httpStatus.NOT_FOUND, 'Habit is not valid');
+  }
+
+  // make sure goal exists in the db with the goal's _id as it is coming from the client side
+  const goal = await Goal.findById(
+    habitProgress.goal,
+    '_id startDate duration'
+  ).lean();
+
+  if (!goal) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
+  }
+
+  // get the goal end date
+  const goalEndDate = addDays(goal.startDate, goal.duration);
+
+  // if current date is exceeding goal end date
+  if (isAfter(new Date(), goalEndDate)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Don't have time to pursue the goal"
+    );
   }
 
   // check if the user is really into the goal
@@ -261,8 +303,9 @@ const fetchMySubgoalsProgressFromDB = async (
     .selectFields()
     .paginate();
 
-  const subgoalsProgress =
-    await subgoalsProgressQuery.modelQuery.populate('subgoal');
+  const subgoalsProgress = await subgoalsProgressQuery.modelQuery
+    .populate('subgoal')
+    .populate('goal');
 
   const meta = await subgoalsProgressQuery.getPaginationInformation();
 

@@ -8,6 +8,8 @@ export interface ISubgoalProgress {
   reward?: Types.ObjectId;
   isCompleted?: boolean;
   isRewarded?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type SubgoalProgressCreationData = Pick<

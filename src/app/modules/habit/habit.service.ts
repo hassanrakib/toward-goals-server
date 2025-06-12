@@ -5,6 +5,8 @@ import { Habit, HabitUnit } from './habit.model';
 import { HabitProgress, GoalProgress } from '../progress/progress.model';
 import { User } from '../user/user.model';
 import { addRecordToAlgoliaIndex } from '../../utils/algolia';
+import { Goal } from '../goal/goal.model';
+import { addDays, isAfter } from 'date-fns';
 
 const insertHabitUnitIntoDB = async (
   goalId: string,
@@ -13,6 +15,24 @@ const insertHabitUnitIntoDB = async (
 ) => {
   // get the user _id to use it in the goal progress query
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
+  // make sure goal exists in the db with the goal's _id as it is coming from the client side
+  const goal = await Goal.findById(goalId, '_id startDate duration').lean();
+
+  if (!goal) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
+  }
+
+  // get the goal end date
+  const goalEndDate = addDays(goal.startDate, goal.duration);
+
+  // if current date is exceeding goal end date
+  if (isAfter(new Date(), goalEndDate)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Don't have time to pursue the goal"
+    );
+  }
 
   // check if the user is really into the goal
   const progress = await GoalProgress.findOne(
@@ -85,6 +105,24 @@ const insertHabitIntoDB = async (
 
   // get the user _id to use it in the goal progress query
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
+
+  // make sure goal exists in the db with the goal's _id as it is coming from the client side
+  const goal = await Goal.findById(goalId, '_id startDate duration').lean();
+
+  if (!goal) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
+  }
+
+  // get the goal end date
+  const goalEndDate = addDays(goal.startDate, goal.duration);
+
+  // if current date is exceeding goal end date
+  if (isAfter(new Date(), goalEndDate)) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Don't have time to pursue the goal"
+    );
+  }
 
   // check if the user is really into the goal
   const progress = await GoalProgress.findOne(

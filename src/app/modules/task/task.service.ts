@@ -15,8 +15,10 @@ import {
 } from '../progress/progress.model';
 import saveImageToCloud from '../../utils/save-image-to-cloud';
 import {
+  addDays,
   differenceInDays,
   endOfToday,
+  isAfter,
   isBefore,
   isToday,
   startOfToday,
@@ -34,6 +36,8 @@ import {
   addLevelUpdateToUpdateObj,
 } from '../progress/progress.util';
 import { calculatePercentage } from '../../utils/calculate-percentage';
+import { Goal } from '../goal/goal.model';
+import { Subgoal } from '../subgoal/subgoal.model';
 
 const insertTimeSpanIntoDB = async (
   userUsername: string,
@@ -77,25 +81,43 @@ const insertTaskIntoDB = async (
   // get the user _id to use it in the task creation
   const userId = (await User.getUserFromDB(userUsername, '_id'))!._id;
 
+  // make sure goal exists in the db with the goal's _id as it is coming from the client side
+  const goal = await Goal.findById(task.goal, '_id startDate duration').lean();
+
+  if (!goal) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Goal is not valid');
+  }
+
+  // task can only be created after goal startDate
+  if (isBefore(new Date(), goal.startDate)) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Goal is not yet started');
+  }
+
   // don't allow creating task when progress for the goal is not found
   // also, don't allow if the goal progress tells that the user already completed the goal
-  const progress = await GoalProgress.findOne(
+  const goalProgress = await GoalProgress.findOne(
     { goal: task.goal, user: userId },
     '_id isCompleted'
   ).lean();
 
-  if (!progress) {
+  if (!goalProgress) {
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this goal');
   }
 
-  if (progress.isCompleted) {
+  if (goalProgress.isCompleted) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'You have already completed the goal'
     );
   }
 
-  // subgoal progress is allowed to create after the goal's startDate
+  // make sure subgoal exists in the db with the subgoal's _id as it is coming from the client side
+  const subgoal = await Subgoal.findById(task.subgoal, '_id duration').lean();
+
+  if (!subgoal) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Subgoal is not valid');
+  }
+
   // don't allow creating task when subgoal progress for the subgoal is not found
   // also, don't allow if the subgoal progress tells that the user already completed the subgoal
   const subgoalProgress = await SubgoalProgress.findOne(
@@ -110,6 +132,25 @@ const insertTaskIntoDB = async (
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this subgoal');
   }
 
+  // get the goal end date & subgoal end date
+  const goalEndDate = addDays(goal.startDate, goal.duration);
+  const subgoalEndDate = addDays(subgoalProgress.createdAt!, subgoal.duration);
+  // 1st condition =>
+  // if subgoal end date is after goal end date (subgoal end date can be greater => see subgoal create service)
+  // and task deadline exceeding goal end date
+  // 2nd condition => or task deadline is after subgoal end date
+  if (
+    (isAfter(subgoalEndDate, goalEndDate) &&
+      isAfter(task.deadline, goalEndDate)) ||
+    isAfter(task.deadline, subgoalEndDate)
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Task deadline is exceeding subgoal end time`
+    );
+  }
+
+  // if subgoal is already completed
   if (subgoalProgress.isCompleted) {
     throw new AppError(
       httpStatus.BAD_REQUEST,

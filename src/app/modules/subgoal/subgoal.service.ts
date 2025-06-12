@@ -4,7 +4,7 @@ import { Goal } from '../goal/goal.model';
 import { User } from '../user/user.model';
 import { ISubgoal } from './subgoal.interface';
 import { Subgoal } from './subgoal.model';
-import { addDays, isAfter, isBefore } from 'date-fns';
+import { addDays, differenceInDays, differenceInMinutes } from 'date-fns';
 import { GoalProgress, SubgoalProgress } from '../progress/progress.model';
 import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 
@@ -25,16 +25,16 @@ const insertSubgoalIntoDB = async (
 
   // don't allow creating subgoal when progress for that goal is not found
   // also, don't allow if the goal progress tells that the user already completed the goal
-  const progress = await GoalProgress.findOne(
+  const goalProgress = await GoalProgress.findOne(
     { goal: goalId, user: userId },
     '_id isCompleted'
   ).lean();
 
-  if (!progress) {
+  if (!goalProgress) {
     throw new AppError(httpStatus.BAD_REQUEST, 'You are not into this goal');
   }
 
-  if (progress.isCompleted) {
+  if (goalProgress.isCompleted) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'You have already completed the goal'
@@ -54,18 +54,34 @@ const insertSubgoalIntoDB = async (
     );
   }
 
-  // subgoal can only be created after the goal's startDate
-  if (isBefore(new Date(), goal.startDate)) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Goal is not yet started');
-  }
-
-  // subgoal duration can not exceed the goal end date
+  // get the goal end date
   const goalEndDate = addDays(goal.startDate, goal.duration);
-  const subgoalEndDate = addDays(new Date(), subgoal.duration);
-  if (isAfter(subgoalEndDate, goalEndDate)) {
+
+  // get the full days to end the goal
+  const daysToEndGoal = differenceInDays(goalEndDate, new Date());
+
+  // get the remaining minutes after daysToEndGoal
+  const remainingMinutesAfterDaysToEndGoal =
+    differenceInMinutes(goalEndDate, new Date()) % (24 * 60);
+
+  // if days to end goal is less than 1 day also less than 30 minutes
+  if (daysToEndGoal < 1 && remainingMinutesAfterDaysToEndGoal < 30) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      'Subgoal duration can not exceed the goal end date'
+      "Don't have time to pursue the goal"
+    );
+  }
+
+  // calculate max allowed subgoal duration
+  // full days to end goal + if remainingMinutesAfterDaysToEndGoal is greater than 30, add 1 more day
+  const maxSubgoalDuration =
+    daysToEndGoal + remainingMinutesAfterDaysToEndGoal >= 30 ? 1 : 0;
+
+  // subgoal duration can not exceed the max subgoal duration
+  if (subgoal.duration > maxSubgoalDuration) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Subgoal duration can not exceed ${String(maxSubgoalDuration)} days`
     );
   }
 
