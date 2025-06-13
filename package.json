@@ -11,7 +11,7 @@
     "start": "node dist/server.js",
     "dev": "tsnd --respawn src/server.ts",
     "build": "tsc",
-    "script": "tsnd --respawn src/app/scripts",
+    "script": "tsnd src/app/scripts/levels.ts",
     "lint": "pnpx eslint src/**",
     "lint-fix": "pnpx eslint --fix src/**",
     "format-check": "pnpx prettier --check src/",
