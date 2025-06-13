@@ -4,7 +4,12 @@ import { Goal } from '../goal/goal.model';
 import { User } from '../user/user.model';
 import { ISubgoal } from './subgoal.interface';
 import { Subgoal } from './subgoal.model';
-import { addDays, differenceInDays, differenceInMinutes } from 'date-fns';
+import {
+  addDays,
+  differenceInDays,
+  differenceInMinutes,
+  isBefore,
+} from 'date-fns';
 import { GoalProgress, SubgoalProgress } from '../progress/progress.model';
 import { addRecordToAlgoliaIndex } from '../../utils/algolia';
 
@@ -57,12 +62,24 @@ const insertSubgoalIntoDB = async (
   // get the goal end date
   const goalEndDate = addDays(goal.startDate, goal.duration);
 
-  // get the full days to end the goal
-  const daysToEndGoal = differenceInDays(goalEndDate, new Date());
+  // get the remainng full days to end the goal
+  // if the current date is before goal's startDate
+  // assign the goal duration
+  // otherwise calculate remaining days
+  const daysToEndGoal = isBefore(new Date(), goal.startDate)
+    ? goal.duration
+    : differenceInDays(goalEndDate, new Date());
 
   // get the remaining minutes after daysToEndGoal
-  const remainingMinutesAfterDaysToEndGoal =
-    differenceInMinutes(goalEndDate, new Date()) % (24 * 60);
+  // if the current date is before goal's startDate
+  // assign 0
+  // otherwise calculate remaining minutes after getting full days remaining to end the goal
+  const remainingMinutesAfterDaysToEndGoal = isBefore(
+    new Date(),
+    goal.startDate
+  )
+    ? 0
+    : differenceInMinutes(goalEndDate, new Date()) % (24 * 60);
 
   // if days to end goal is less than 1 day also less than 30 minutes
   if (daysToEndGoal < 1 && remainingMinutesAfterDaysToEndGoal < 30) {
@@ -75,7 +92,7 @@ const insertSubgoalIntoDB = async (
   // calculate max allowed subgoal duration
   // full days to end goal + if remainingMinutesAfterDaysToEndGoal is greater than 30, add 1 more day
   const maxSubgoalDuration =
-    daysToEndGoal + remainingMinutesAfterDaysToEndGoal >= 30 ? 1 : 0;
+    daysToEndGoal + (remainingMinutesAfterDaysToEndGoal >= 30 ? 1 : 0);
 
   // subgoal duration can not exceed the max subgoal duration
   if (subgoal.duration > maxSubgoalDuration) {

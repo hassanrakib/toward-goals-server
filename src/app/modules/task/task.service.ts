@@ -125,7 +125,7 @@ const insertTaskIntoDB = async (
       user: userId,
       subgoal: task.subgoal,
     },
-    '_id isCompleted'
+    '_id isCompleted createdAt'
   ).lean();
 
   if (!subgoalProgress) {
@@ -134,7 +134,13 @@ const insertTaskIntoDB = async (
 
   // get the goal end date & subgoal end date
   const goalEndDate = addDays(goal.startDate, goal.duration);
-  const subgoalEndDate = addDays(subgoalProgress.createdAt!, subgoal.duration);
+  // if subgoal created before goal start date
+  // subgoal end date will be sum of goal start date and subgoal duration
+  // if subgoal created after goal start date
+  // subgoal end date will be sum of subgoal creation date and subgoal duration
+  const subgoalEndDate = isBefore(subgoalProgress.createdAt!, goal.startDate)
+    ? addDays(goal.startDate, subgoal.duration)
+    : addDays(subgoalProgress.createdAt!, subgoal.duration);
   // 1st condition =>
   // if subgoal end date is after goal end date (subgoal end date can be greater => see subgoal create service)
   // and task deadline exceeding goal end date
