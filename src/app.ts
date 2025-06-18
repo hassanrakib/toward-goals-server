@@ -6,6 +6,7 @@ import notFound from './app/middlewares/not-found';
 import httpStatus from 'http-status';
 import errorHandler from './app/middlewares/error-handler';
 import config from './app/config';
+import dbConnect from './app/middlewares/db-connect';
 
 // express app instance
 const app = express();
@@ -19,6 +20,15 @@ app.use(
     credentials: true,
   })
 );
+
+// when production is deployed to vercel
+// because, vercel uses serverless functions
+// so, no long running server & db connection
+// server.ts file is not needed for the app to work on vercel
+if (config.NODE_ENV === 'production') {
+  // make sure db connection established before doing db operations
+  app.use(dbConnect());
+}
 
 // root route
 app.get('/', (req, res) => {
