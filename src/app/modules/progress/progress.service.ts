@@ -9,6 +9,7 @@ import {
   ISubgoalProgress,
   GoalProgressCreationData,
   SubgoalProgressCreationData,
+  SubgoalProgressUpdateData,
 } from './progress.interface';
 import { HabitProgress, GoalProgress, SubgoalProgress } from './progress.model';
 import { Goal } from '../goal/goal.model';
@@ -385,7 +386,7 @@ const fetchMyGoalProgressLevel = async (
 const updateSubgoalProgressIntoDB = async (
   username: string,
   subgoalProgressId: string,
-  update: Partial<ISubgoalProgress>
+  update: SubgoalProgressUpdateData
 ) => {
   // get the current user _id
   const userId = (await User.getUserFromDB(username, '_id'))!._id;

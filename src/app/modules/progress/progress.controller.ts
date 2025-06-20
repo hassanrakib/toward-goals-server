@@ -6,7 +6,7 @@ import {
   HabitProgressCreationData,
   GoalProgressCreationData,
   SubgoalProgressCreationData,
-  ISubgoalProgress,
+  SubgoalProgressUpdateData,
 } from './progress.interface';
 import { progressServices } from './progress.service';
 
@@ -124,7 +124,7 @@ const getMyGoalProgressLevel = catchAsync(
 
 const updateSubgoalProgress = catchAsync(
   async (
-    req: Request<{ subgoalProgressId?: string }, {}, Partial<ISubgoalProgress>>,
+    req: Request<{ subgoalProgressId?: string }, {}, SubgoalProgressUpdateData>,
     res
   ) => {
     const updatedSubgoalProgress =
