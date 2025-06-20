@@ -53,3 +53,6 @@ export interface IGoalProgress {
 }
 
 export type GoalProgressCreationData = Pick<IGoalProgress, 'goal'>;
+export interface GoalProgressUpdateData {
+  isCompleted: true;
+}

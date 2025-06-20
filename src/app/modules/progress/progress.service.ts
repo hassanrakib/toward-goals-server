@@ -10,6 +10,7 @@ import {
   GoalProgressCreationData,
   SubgoalProgressCreationData,
   SubgoalProgressUpdateData,
+  GoalProgressUpdateData,
 } from './progress.interface';
 import { HabitProgress, GoalProgress, SubgoalProgress } from './progress.model';
 import { Goal } from '../goal/goal.model';
@@ -399,7 +400,7 @@ const updateSubgoalProgressIntoDB = async (
 
   // check if the subgoalProgress is found or not
   if (!subgoalProgress) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Subgoal progress is not found');
+    throw new AppError(httpStatus.NOT_FOUND, 'Subgoal progress is not found');
   }
 
   // check whether current user is updating others subgoalProgress
@@ -436,6 +437,65 @@ const updateSubgoalProgressIntoDB = async (
   return result;
 };
 
+const updateGoalProgressIntoDB = async (
+  username: string,
+  goalProgressId: string,
+  update: GoalProgressUpdateData
+) => {
+  // get the current user _id
+  const userId = (await User.getUserFromDB(username, '_id'))!._id;
+
+  // get the goalProgress by its id
+  const goalProgress = await GoalProgress.findById(
+    goalProgressId,
+    '_id user goal isCompleted'
+  ).lean();
+
+  // check if goal progress exists
+  if (!goalProgress) {
+    throw new AppError(httpStatus.NOT_FOUND, 'The goal progress is not found');
+  }
+
+  // check that if current user is trying to update others goalProgress
+  if (String(userId) !== String(goalProgress.user)) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'You are not allowed to perform the action'
+    );
+  }
+
+  // make sure that the goalProgress is not completed
+  if (goalProgress.isCompleted) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Goal progress is already completed'
+    );
+  }
+
+  // make sure all the subgoal progress is complete
+  // if all the subgoal progress complete => all the tasks are also complete
+  const inCompleteSubgoalProgressCount = await SubgoalProgress.countDocuments({
+    goal: goalProgress.goal,
+    user: goalProgress.user,
+    isCompleted: false,
+  });
+
+  if (inCompleteSubgoalProgressCount > 0) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'There is a subgoal incomplete!'
+    );
+  }
+
+  // do the update
+  const result = await GoalProgress.findByIdAndUpdate(goalProgressId, update, {
+    runValidator: true,
+    new: true,
+  });
+
+  return result;
+};
+
 export const progressServices = {
   insertSubgoalProgressIntoDB,
   insertHabitProgressIntoDB,
@@ -445,4 +505,5 @@ export const progressServices = {
   fetchMyHabitsProgressFromDB,
   fetchMyGoalProgressLevel,
   updateSubgoalProgressIntoDB,
+  updateGoalProgressIntoDB,
 };

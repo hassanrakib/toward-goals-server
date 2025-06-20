@@ -203,9 +203,18 @@ const createGoalProgressSchema = z.object({
   }),
 });
 
+const updateGoalProgressSchema = z.object({
+  body: z.object({
+    isCompleted: z.literal(true, {
+      errorMap: () => ({ message: 'Expected boolean true' }),
+    }),
+  }),
+});
+
 export const progressValidations = {
   createSubgoalProgressSchema,
   updateSubgoalProgressSchema,
   createHabitProgressSchema,
   createGoalProgressSchema,
+  updateGoalProgressSchema,
 };

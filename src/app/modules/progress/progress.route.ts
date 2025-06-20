@@ -58,4 +58,11 @@ router.patch(
   progressControllers.updateSubgoalProgress
 );
 
+router.patch(
+  '/my-goals-progress/:goalProgressId',
+  auth(),
+  validateRequest(progressValidations.updateGoalProgressSchema),
+  progressControllers.updateGoalProgress
+);
+
 export const progressRoutes = router;

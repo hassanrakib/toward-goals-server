@@ -7,6 +7,7 @@ import {
   GoalProgressCreationData,
   SubgoalProgressCreationData,
   SubgoalProgressUpdateData,
+  GoalProgressUpdateData,
 } from './progress.interface';
 import { progressServices } from './progress.service';
 
@@ -143,6 +144,26 @@ const updateSubgoalProgress = catchAsync(
   }
 );
 
+const updateGoalProgress = catchAsync(
+  async (
+    req: Request<{ goalProgressId?: string }, {}, GoalProgressUpdateData>,
+    res
+  ) => {
+    const updatedGoalProgress = await progressServices.updateGoalProgressIntoDB(
+      req.user.username,
+      req.params.goalProgressId!,
+      req.body
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: 'Goal progress updated successful',
+      data: updatedGoalProgress,
+    });
+  }
+);
+
 export const progressControllers = {
   createSubgoalProgress,
   createHabitProgress,
@@ -152,4 +173,5 @@ export const progressControllers = {
   getMyHabitsProgress,
   getMyGoalProgressLevel,
   updateSubgoalProgress,
+  updateGoalProgress,
 };
