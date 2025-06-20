@@ -76,7 +76,7 @@ const habitSchema = new Schema<IHabit>({
     type: String,
     required: [true, 'Habit title is required.'],
     minlength: [3, 'Habit title must be at least 3 characters long.'],
-    maxlength: [50, 'Habit title must be at most 50 characters long.'],
+    maxlength: [60, 'Habit title can be at most 60 characters long.'],
     trim: true,
   },
   unit: {

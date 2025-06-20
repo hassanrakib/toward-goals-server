@@ -5,7 +5,7 @@ const createSubgoalSchema = z.object({
     title: z
       .string({ required_error: 'Title is required' })
       .min(5, { message: 'Title must be at least 5 characters long' })
-      .max(50, { message: 'Title cannot exceed 50 characters' })
+      .max(60, { message: 'Title cannot exceed 60 characters' })
       .trim(),
     duration: z
       .number({ required_error: 'Duration is required' })

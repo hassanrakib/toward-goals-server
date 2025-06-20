@@ -7,7 +7,7 @@ const subgoalSchema = new Schema<ISubgoal>({
     required: [true, 'Title is required'],
     trim: true,
     minlength: [5, 'Title must be at least 5 characters long'],
-    maxlength: [50, 'Title cannot exceed 50 characters'],
+    maxlength: [60, 'Title cannot exceed 60 characters'],
   },
   duration: {
     type: Number,

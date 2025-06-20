@@ -9,7 +9,7 @@ const goalSchema = new Schema<IGoal>(
       required: [true, 'Title is required'],
       trim: true,
       minlength: [5, 'Title must be at least 5 characters long'],
-      maxlength: [50, 'Title cannot exceed 50 characters'],
+      maxlength: [60, 'Title cannot exceed 60 characters'],
     },
     image: {
       type: String,
