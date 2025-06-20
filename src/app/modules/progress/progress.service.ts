@@ -22,6 +22,7 @@ import {
   isBefore,
 } from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
+import { Task } from '../task/task.model';
 
 const insertSubgoalProgressIntoDB = async (
   userUsername: string,
@@ -381,6 +382,59 @@ const fetchMyGoalProgressLevel = async (
   return goalProgress.level;
 };
 
+const updateSubgoalProgressIntoDB = async (
+  username: string,
+  subgoalProgressId: string,
+  update: Partial<ISubgoalProgress>
+) => {
+  // get the current user _id
+  const userId = (await User.getUserFromDB(username, '_id'))!._id;
+
+  // get the subgoalProgress by subgoalProgress id
+  const subgoalProgress = await SubgoalProgress.findById(
+    subgoalProgressId,
+    '_id isCompleted user goal'
+  ).lean();
+
+  // check if the subgoalProgress is found or not
+  if (!subgoalProgress) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Subgoal progress is not found');
+  }
+
+  // check whether current user is updating others subgoalProgress
+  if (String(userId) !== String(subgoalProgress.user)) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'You are not allowed to perform the action'
+    );
+  }
+
+  //  check if the subgoalProgress is completed
+  if (subgoalProgress.isCompleted) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'The subgoal is completed');
+  }
+
+  // make sure all the tasks of user for the goal is complete
+  const inCompleteTaskCount = await Task.countDocuments({
+    goal: subgoalProgress.goal,
+    user: subgoalProgress.user,
+    isCompleted: false,
+  });
+
+  if (inCompleteTaskCount > 0) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'There is a task incomplete!');
+  }
+
+  // update the subgoalProgress
+  const result = await SubgoalProgress.findByIdAndUpdate(
+    subgoalProgressId,
+    update,
+    { runValidators: true, new: true }
+  );
+
+  return result;
+};
+
 export const progressServices = {
   insertSubgoalProgressIntoDB,
   insertHabitProgressIntoDB,
@@ -389,4 +443,5 @@ export const progressServices = {
   fetchMySubgoalsProgressFromDB,
   fetchMyHabitsProgressFromDB,
   fetchMyGoalProgressLevel,
+  updateSubgoalProgressIntoDB,
 };

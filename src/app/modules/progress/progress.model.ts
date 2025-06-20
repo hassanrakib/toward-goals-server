@@ -26,13 +26,13 @@ const subgoalProgressSchema = new Schema<ISubgoalProgress>(
       type: [String],
       validate: [
         {
-          validator: (milestones: string[]) => milestones.length <= 4,
-          message: 'There must be no more than 4 milestones',
+          validator: (milestones: string[]) => milestones.length <= 5,
+          message: 'There must be no more than 5 milestones',
         },
         {
           validator: (milestones: string[]) =>
-            milestones.every((milestone) => milestone.length >= 3),
-          message: 'Each milestone must be at least 3 characters long',
+            milestones.every((milestone) => milestone.length >= 5),
+          message: 'Each milestone must be at least 5 characters long',
         },
       ],
       default: [],

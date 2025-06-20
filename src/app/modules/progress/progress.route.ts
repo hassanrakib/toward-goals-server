@@ -51,4 +51,11 @@ router.get(
   progressControllers.getMyGoalProgressLevel
 );
 
+router.patch(
+  '/my-subgoals-progress/:subgoalProgressId',
+  auth(),
+  validateRequest(progressValidations.updateSubgoalProgressSchema),
+  progressControllers.updateSubgoalProgress
+);
+
 export const progressRoutes = router;
