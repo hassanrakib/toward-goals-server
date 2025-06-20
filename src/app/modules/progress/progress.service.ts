@@ -183,18 +183,6 @@ const insertHabitProgressIntoDB = async (
       'You have already completed the goal'
     );
   }
-  // check if there are 3 habits already created for the goal
-  const habitProgressCount = await HabitProgress.countDocuments({
-    user: userId,
-    goal: habitProgress.goal,
-  });
-
-  if (habitProgressCount === 3) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'You have already created three habits for this goal'
-    );
-  }
 
   const newHabitProgress: IHabitProgress = {
     ...habitProgress,

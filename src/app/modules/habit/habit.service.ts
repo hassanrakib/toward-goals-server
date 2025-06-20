@@ -50,18 +50,6 @@ const insertHabitUnitIntoDB = async (
       'You have already completed the goal'
     );
   }
-  // check if there are 3 habits already created for the goal
-  const habitProgressCount = await HabitProgress.countDocuments({
-    user: userId,
-    goal: goalId,
-  });
-
-  if (habitProgressCount === 3) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'You have already created three habits for this goal'
-    );
-  }
 
   // to avoid duplicate entry both in db and algolia
   // check for duplicate habit unit
@@ -138,18 +126,6 @@ const insertHabitIntoDB = async (
     throw new AppError(
       httpStatus.BAD_REQUEST,
       'You have already completed the goal'
-    );
-  }
-  // check if there are 3 habits already created for the goal
-  const habitProgressCount = await HabitProgress.countDocuments({
-    user: userId,
-    goal: goalId,
-  });
-
-  if (habitProgressCount === 3) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'You have already created three habits for this goal'
     );
   }
 
