@@ -55,6 +55,13 @@ const taskSchema = new Schema<ITask>(
       required: [true, 'Habit is required.'],
       ref: 'Habit',
     },
+    title: {
+      type: String,
+      required: [true, 'Title is required'],
+      trim: true,
+      minlength: [5, 'Title must be at least 5 characters long'],
+      maxlength: [60, 'Title cannot exceed 60 characters'],
+    },
     description: {
       type: String,
       required: [true, 'Task description is required'],
