@@ -63,8 +63,9 @@ const taskSchema = new Schema<ITask>(
       maxlength: [60, 'Title cannot exceed 60 characters'],
     },
     description: {
-      type: String,
-      required: [true, 'Task description is required'],
+      // When you want to store arbitrary JSON
+      type: Schema.Types.Mixed,
+      required: true,
     },
     completedUnits: {
       type: Number,

@@ -35,6 +35,34 @@ const createTimeSpanSchema = z.object({
     ),
 });
 
+// Tiptap JSON document validation
+// Text node schema
+const TextNodeSchema = z.object({
+  type: z.literal('text'),
+  text: z.string(),
+});
+
+// Mention node schema
+const MentionNodeSchema = z.object({
+  type: z.enum(['goal', 'subgoal', 'habit', 'deadline']),
+  attrs: z.object({
+    id: z.string(),
+    label: z.string(),
+  }),
+});
+
+// Paragraph node schema: can have text or mention nodes
+export const ParagraphNodeSchema = z.object({
+  type: z.literal('paragraph'),
+  content: z.array(z.union([TextNodeSchema, MentionNodeSchema])),
+});
+
+// Document schema: must have exactly one paragraph
+export const TiptapDocSchema = z.object({
+  type: z.literal('doc'),
+  content: z.tuple([ParagraphNodeSchema]),
+});
+
 const createTaskSchema = z.object({
   body: z.object({
     // user: z
@@ -61,7 +89,7 @@ const createTaskSchema = z.object({
       .string({ required_error: 'Title is required' })
       .min(5, { message: 'Title must be at least 5 characters long' })
       .max(60, { message: 'Title cannot exceed 60 characters' }),
-    description: z.string({ required_error: 'Task description is required' }),
+    description: TiptapDocSchema,
     // completedUnits: z
     //   .number()
     //   .int('Completed units must be an integer.')

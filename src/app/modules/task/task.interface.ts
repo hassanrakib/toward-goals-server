@@ -1,4 +1,6 @@
 import { Types } from 'mongoose';
+import { z } from 'zod';
+import { TiptapDocSchema } from './task.validation';
 
 export interface ITimeSpan {
   task: Types.ObjectId;
@@ -12,8 +14,8 @@ export interface ITask {
   subgoal: Types.ObjectId;
   habit: Types.ObjectId;
   title: string;
-  // html string
-  description: string;
+  // titap json doc
+  description: z.infer<typeof TiptapDocSchema>;
   completedUnits?: number;
   images?: string[];
   deadline: Date;
@@ -25,7 +27,7 @@ export interface ITask {
 export type TaskCreationData = Pick<
   ITask,
   'goal' | 'subgoal' | 'habit' | 'title' | 'description' | 'deadline'
-> & { title: string };
+>;
 
 export interface TaskUpdateData {
   newCompletedUnits?: number;

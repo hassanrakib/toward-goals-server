@@ -25,7 +25,6 @@ import {
   startOfYesterday,
 } from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
-import { sanitizeTaskDescription } from './task.util';
 import { IHabit } from '../habit/habit.interface';
 import { IGoal } from '../goal/goal.interface';
 import { getCompletedHabitDifficultyName } from '../habit/habit.util';
@@ -210,9 +209,6 @@ const insertTaskIntoDB = async (
   // new task
   const newTask: ITask = {
     ...task,
-    // santize will santize the html
-    // to remove dangerous scripts, event handlers, etc from html
-    description: sanitizeTaskDescription(task.description),
     user: userId,
   };
 
