@@ -416,16 +416,18 @@ const updateSubgoalProgressIntoDB = async (
     throw new AppError(httpStatus.BAD_REQUEST, 'The subgoal is completed');
   }
 
-  // make sure all the tasks of user for the goal is complete
-  const inCompleteTaskCount = await Task.countDocuments({
-    goal: subgoalProgress.goal,
-    user: subgoalProgress.user,
-    isCompleted: false,
-  });
-
   // if trying to complete the subgoal and has more than zero task incomplete
-  if (subgoalProgressUpdate.isCompleted && inCompleteTaskCount > 0) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'There is a task incomplete!');
+  if (subgoalProgressUpdate.isCompleted) {
+    // make sure all the tasks of user for the goal is complete
+    const inCompleteTaskCount = await Task.countDocuments({
+      goal: subgoalProgress.goal,
+      user: subgoalProgress.user,
+      isCompleted: false,
+    });
+
+    if (inCompleteTaskCount > 0) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'There is a task incomplete!');
+    }
   }
 
   // if update has keyMilestones then we have to make sure total keyMilestones not greater than 5
