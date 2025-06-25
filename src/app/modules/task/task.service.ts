@@ -17,11 +17,11 @@ import saveImageToCloud from '../../utils/save-image-to-cloud';
 import {
   addDays,
   differenceInDays,
-  endOfToday,
+  // endOfToday,
   isAfter,
   isBefore,
   isToday,
-  startOfToday,
+  // startOfToday,
   startOfYesterday,
 } from 'date-fns';
 import QueryBuilder, { QueryParams } from '../../builder/QueryBuilder';
@@ -174,38 +174,39 @@ const insertTaskIntoDB = async (
   }
 
   // make sure only one task created per day for a goal
-  const taskCreatedToday = await Task.findOne(
-    {
-      goal: task.goal,
-      user: userId,
-      createdAt: { $gte: startOfToday(), $lte: endOfToday() },
-    },
-    '_id'
-  ).lean();
+  // const taskCreatedToday = await Task.findOne(
+  //   {
+  //     goal: task.goal,
+  //     user: userId,
+  //     createdAt: { $gte: startOfToday(), $lte: endOfToday() },
+  //   },
+  //   '_id'
+  // ).lean();
 
-  if (taskCreatedToday) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'A task is already created for today'
-    );
-  }
+  // if (taskCreatedToday) {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     'A task is already created for today'
+  //   );
+  // }
 
-  // make sure all other tasks for this goal are complete
-  const incompleteTask = await Task.findOne(
-    {
-      goal: task.goal,
-      user: userId,
-      isCompleted: false,
-    },
-    '_id'
-  ).lean();
+  // // make sure all other tasks for this goal are complete
+  // const incompleteTask = await Task.findOne(
+  //   {
+  //     goal: task.goal,
+  //     user: userId,
+  //     isCompleted: false,
+  //   },
+  //   '_id'
+  // ).lean();
 
-  if (incompleteTask) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'You have a task incomplete for the goal'
-    );
-  }
+  // if (incompleteTask) {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     'You have a task incomplete for the goal'
+  //   );
+  // }
+
   // new task
   const newTask: ITask = {
     ...task,

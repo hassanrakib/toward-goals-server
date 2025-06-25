@@ -387,7 +387,7 @@ const fetchMyGoalProgressLevel = async (
 const updateSubgoalProgressIntoDB = async (
   username: string,
   subgoalProgressId: string,
-  { isCompleted, keyMilestones }: SubgoalProgressUpdateData
+  subgoalProgressUpdate: SubgoalProgressUpdateData
 ) => {
   // get the current user _id
   const userId = (await User.getUserFromDB(username, '_id'))!._id;
@@ -423,15 +423,17 @@ const updateSubgoalProgressIntoDB = async (
     isCompleted: false,
   });
 
-  if (inCompleteTaskCount > 0) {
+  // if trying to complete the subgoal and has more than zero task incomplete
+  if (subgoalProgressUpdate.isCompleted && inCompleteTaskCount > 0) {
     throw new AppError(httpStatus.BAD_REQUEST, 'There is a task incomplete!');
   }
 
   // if update has keyMilestones then we have to make sure total keyMilestones not greater than 5
-  if (keyMilestones) {
+  if (subgoalProgressUpdate.keyMilestones) {
     // previously added milestones count + new milestones count
     const totalMilestonesCount =
-      keyMilestones.length + subgoalProgress.keyMilestones!.length;
+      subgoalProgressUpdate.keyMilestones.length +
+      subgoalProgress.keyMilestones!.length;
 
     if (totalMilestonesCount > 5) {
       throw new AppError(
@@ -444,10 +446,16 @@ const updateSubgoalProgressIntoDB = async (
   // structure the update
   const update = {
     // if isCompleted field found in update add it to update
-    ...(isCompleted ? { isCompleted } : {}),
+    ...(subgoalProgressUpdate.isCompleted
+      ? { isCompleted: subgoalProgressUpdate.isCompleted }
+      : {}),
     // if keyMilestones field found in update push new key milestones
-    ...(keyMilestones
-      ? { $push: { keyMilestones: { $each: keyMilestones } } }
+    ...(subgoalProgressUpdate.keyMilestones
+      ? {
+          $push: {
+            keyMilestones: { $each: subgoalProgressUpdate.keyMilestones },
+          },
+        }
       : {}),
   };
 
