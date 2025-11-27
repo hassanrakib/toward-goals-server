@@ -2,9 +2,12 @@ import { model, Schema } from 'mongoose';
 import {
   HabitUnitNameForTime,
   HabitUnitType,
+  IActivity,
   IHabit,
   IHabitDifficulties,
   IHabitUnit,
+  IOptionGroup,
+  ITask,
 } from './habit.interface';
 
 const habitUnitSchema = new Schema<IHabitUnit>({
@@ -98,3 +101,82 @@ const habitSchema = new Schema<IHabit>({
 export const Habit = model<IHabit>('Habit', habitSchema);
 
 export const HabitUnit = model<IHabitUnit>('HabitUnit', habitUnitSchema);
+
+
+// new habit model
+
+// ------------------------------------------
+// 1. TASK SCHEMA
+// ------------------------------------------
+const TaskSchema = new Schema<ITask>(
+  {
+    type: {
+      type: String,
+      enum: ["direct", "reference"],
+      default: "direct",
+      required: true,
+    },
+
+    // DIRECT task fields
+    count: { type: Number },
+    unit: { type: String },
+
+    // REFERENCE task fields
+    refActivity: { type: Schema.Types.ObjectId, ref: "Activity" },
+    refLevel: { type: String, enum: ["mini", "plus", "elite"] },
+  },
+  { _id: false }
+);
+
+// Conditional validation
+TaskSchema.pre("validate", function (next) {
+  if (this.type === "direct") {
+    if (!this.count || !this.unit) {
+      return next(new Error("Direct task requires count and unit"));
+    }
+  }
+
+  if (this.type === "reference") {
+    if (!this.refActivity || !this.refLevel) {
+      return next(new Error("Reference task requires refActivity and refLevel"));
+    }
+  }
+
+  next();
+});
+
+// ------------------------------------------
+// 2. OPTION GROUP (OR / AND logic)
+// ------------------------------------------
+const OptionGroupSchema = new Schema<IOptionGroup>(
+  {
+    description: { type: String }, // optional label
+    selectionType: {
+      type: String,
+      enum: ["required", "oneOf"],
+      default: "required",
+    },
+    tasks: {
+      type: [TaskSchema],
+      default: [],
+    },
+  },
+  { _id: false }
+);
+
+// ------------------------------------------
+// 3. ACTIVITY SCHEMA
+// ------------------------------------------
+const ActivitySchema = new Schema<IActivity>({
+  name: { type: String, required: true }, // "Bike", "Gym", etc.
+
+  userId: { type: Schema.Types.ObjectId, ref: "User" },
+
+  levels: {
+    mini: { type: [OptionGroupSchema], default: [] },
+    plus: { type: [OptionGroupSchema], default: [] },
+    elite: { type: [OptionGroupSchema], default: [] },
+  },
+});
+
+module.exports = model<IActivity>("Activity", ActivitySchema);
