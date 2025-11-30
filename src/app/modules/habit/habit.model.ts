@@ -3,11 +3,11 @@ import {
   HabitUnitNameForTime,
   HabitUnitType,
   IActivity,
+  IActivityGroup,
+  IElasticHabit,
   IHabit,
   IHabitDifficulties,
   IHabitUnit,
-  IOptionGroup,
-  ITask,
 } from './habit.interface';
 
 const habitUnitSchema = new Schema<IHabitUnit>({
@@ -105,78 +105,87 @@ export const HabitUnit = model<IHabitUnit>('HabitUnit', habitUnitSchema);
 
 // new habit model
 
-// ------------------------------------------
-// 1. TASK SCHEMA
-// ------------------------------------------
-const TaskSchema = new Schema<ITask>(
+
+// ------------------------------
+// Activity Schema
+// ------------------------------
+const ActivitySchema = new Schema<IActivity>(
   {
-    type: {
+    name: {
       type: String,
-      enum: ["direct", "reference"],
-      default: "direct",
+      required: true,
+      trim: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    unit: {
+      type: Schema.Types.ObjectId,
+      ref: "HabitUnit",
       required: true,
     },
-
-    // DIRECT task fields
-    count: { type: Number },
-    unit: { type: String },
-
-    // REFERENCE task fields
-    refActivity: { type: Schema.Types.ObjectId, ref: "Activity" },
-    refLevel: { type: String, enum: ["mini", "plus", "elite"] },
   },
   { _id: false }
 );
 
-// Conditional validation
-TaskSchema.pre("validate", function (next) {
-  if (this.type === "direct") {
-    if (!this.count || !this.unit) {
-      return next(new Error("Direct task requires count and unit"));
-    }
-  }
-
-  if (this.type === "reference") {
-    if (!this.refActivity || !this.refLevel) {
-      return next(new Error("Reference task requires refActivity and refLevel"));
-    }
-  }
-
-  next();
-});
-
-// ------------------------------------------
-// 2. OPTION GROUP (OR / AND logic)
-// ------------------------------------------
-const OptionGroupSchema = new Schema<IOptionGroup>(
+// ------------------------------
+// ActivityGroup Schema
+// ------------------------------
+const ActivityGroupSchema = new Schema<IActivityGroup>(
   {
-    description: { type: String }, // optional label
-    selectionType: {
+    selectionRule: {
       type: String,
       enum: ["required", "oneOf"],
-      default: "required",
+      required: true,
     },
-    tasks: {
-      type: [TaskSchema],
-      default: [],
+    activities: {
+      type: [ActivitySchema],
+      required: true,
+      validate: {
+        validator: (arr: any[]) => arr.length > 0,
+        message: "Activities array must have at least one item",
+      },
     },
   },
   { _id: false }
 );
 
-// ------------------------------------------
-// 3. ACTIVITY SCHEMA
-// ------------------------------------------
-const ActivitySchema = new Schema<IActivity>({
-  name: { type: String, required: true }, // "Bike", "Gym", etc.
-
-  userId: { type: Schema.Types.ObjectId, ref: "User" },
-
-  levels: {
-    mini: { type: [OptionGroupSchema], default: [] },
-    plus: { type: [OptionGroupSchema], default: [] },
-    elite: { type: [OptionGroupSchema], default: [] },
+// ------------------------------
+// Elastic Habit Schema
+// ------------------------------
+const ElasticHabitSchema = new Schema<IElasticHabit>({
+  mini: {
+    type: [ActivityGroupSchema],
+    required: true,
+    validate: {
+        validator: (arr: any[]) => arr.length > 0,
+        message: "Mini difficulty must have at least one item",
+    },
   },
+  plus: {
+    type: [ActivityGroupSchema],
+    required: true,
+    validate: {
+        validator: (arr: any[]) => arr.length > 0,
+        message: "Plus difficulty must have at least one item",
+    },
+  },
+  elite: {
+    type: [ActivityGroupSchema],
+    required: true,
+    validate: {
+        validator: (arr: any[]) => arr.length > 0,
+        message: "Elite difficulty must have at least one item",
+    },
+  },
+  usageCount: {
+    type: Number,
+    required: true,
+    default: 0,
+  }
 });
 
-module.exports = model<IActivity>("Activity", ActivitySchema);
+export const ElasticHabit = model<IElasticHabit>('ElasticHabit', ElasticHabitSchema);
+

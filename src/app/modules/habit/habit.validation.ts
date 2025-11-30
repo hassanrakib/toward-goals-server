@@ -90,55 +90,40 @@ const createHabitSchema = z.object({
   }),
 });
 
-export const habitValidations = {
-  createHabitSchema,
-  createHabitUnitSchema,
-};
 
 
 // new habit validation
 
-export const zTaskType = z.enum(["direct", "reference"]);
-export const zHabitLevel = z.enum(["mini", "plus", "elite"]);
-
-export const zTask = z.object({
-  type: zTaskType,
-
-  // DIRECT fields
-  count: z.number().optional(),
-  unit: z.string().optional(),
-
-  // REFERENCE fields
-  refActivity: z.string().optional(), // ObjectId as string
-  refLevel: zHabitLevel.optional(),
-})
-.refine(
-  (task) => task.type !== "direct" || (task.count && task.unit),
-  { message: "Direct task requires count and unit", path: ["count"] }
-)
-.refine(
-  (task) => task.type !== "reference" || (task.refActivity && task.refLevel),
-  { message: "Reference task requires refActivity and refLevel", path: ["refActivity"] }
-);
-
-export const zSelectionType = z.enum(["required", "oneOf"]);
-
-export const zOptionGroup = z.object({
-  description: z.string().optional(),
-  selectionType: zSelectionType.default("required"),
-  tasks: z.array(zTask),
+// ------------------------------
+// Activity Zod Schema
+// ------------------------------
+export const createActivitySchema = z.object({
+  name: z.string().min(1),
+  quantity: z.number().int().positive(),
+  unit: z.string(),
 });
 
-export const zActivityLevels = z.object({
-  mini: z.array(zOptionGroup).default([]),
-  plus: z.array(zOptionGroup).default([]),
-  elite: z.array(zOptionGroup).default([]),
+// ------------------------------
+// ActivityGroup Zod Schema
+// ------------------------------
+export const createActivityGroupSchema = z.object({
+  selectionRule: z.enum(["required", "oneOf"]),
+  activities: z.array(createActivitySchema).min(1),
 });
 
-export const zActivity = z.object({
-  name: z.string().min(1, "Activity name is required"),
-  userId: z.string().optional(), // ObjectId string
-
-  levels: zActivityLevels,
+// ------------------------------
+// ElasticHabit Zod Schema
+// ------------------------------
+export const createElasticHabitSchema = z.object({
+  mini: z.array(createActivityGroupSchema).min(1),
+  plus: z.array(createActivityGroupSchema).min(1),
+  elite: z.array(createActivityGroupSchema).min(1),
 });
+
+export const habitValidations = {
+  createHabitSchema,
+  createHabitUnitSchema,
+  createElasticHabitSchema,
+};
+
 
